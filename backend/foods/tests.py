@@ -10,6 +10,12 @@ User = get_user_model()
 class RecipeAPITestCase(TestCase):
     def setUp(self):
         self.guest_client = Client()
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='ooo@mail.ru',
+            password='testpass1232025'
+        )
+        self.client.force_login(self.user)
 
     def test_list_exists(self):
         """Проверка доступности списка рецептов."""
@@ -18,11 +24,6 @@ class RecipeAPITestCase(TestCase):
 
     def test_recipe_creation(self):
         """Проверка создания рецепта."""
-        user = User.objects.create_user(
-            email='ooo@mail.ru',
-            password='testpass1232025'
-        )
-        self.client.force_login(user)
         data = {
             "ingredients": [
                 {"name": "авокадо", "amount": 1}

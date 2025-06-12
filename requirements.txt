@@ -10,8 +10,8 @@ django-filter==24.3
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
 djoser==2.3.1
-flake8==7.2.0
-flake8-isort==6.1.2
+flake8==6.1.0
+flake8-import-order==0.18.2
 idna==3.10
 isort==6.0.1
 mccabe==0.7.0
@@ -26,6 +26,7 @@ python3-openid==3.2.0
 PyYAML==6.0.2
 requests==2.32.3
 requests-oauthlib==2.0.0
+setuptools==65.5.0
 six==1.17.0
 social-auth-app-django==5.4.3
 social-auth-core==4.6.1

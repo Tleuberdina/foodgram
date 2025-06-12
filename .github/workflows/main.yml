@@ -31,8 +31,10 @@ jobs:
     - name: Run isort check
       run: python -m isort --check-only backend/
     # Запускаем flake8
-    - name: Test with flake8
+    - name: Test with flake8 and django tests
       # Вызываем flake8 и указываем ему,
       # что нужно проверить файлы только в папке backend/
       run: |
         FLAKE8_IGNORE=flake8-isort python -m flake8 backend/
+        cd backend/
+        python manage.py test

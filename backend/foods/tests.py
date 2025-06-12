@@ -1,7 +1,8 @@
 from http import HTTPStatus
 
-from foods import models
 from django.test import Client, TestCase
+from foods import models
+
 
 class RecipeAPITestCase(TestCase):
     def setUp(self):

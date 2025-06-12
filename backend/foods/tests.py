@@ -27,4 +27,4 @@ class RecipeAPITestCase(TestCase):
         }
         response = self.guest_client.post('/api/recipes/', data=data)
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
-        self.assertTrue(models.Recipe.objects.filter(name='Test').exists()) 
+        self.assertTrue(models.Recipe.objects.filter(name='Test').exists())

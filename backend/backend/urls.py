@@ -3,11 +3,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-
 from foods.views import (FavoriteView, IngredientViewSet, RecipeViewSet,
                          ShoppingCartView, SubscribeView, TagViewSet)
 from users.views import (MyUserAvatarViewSet, MyUserProfileViewSet,
                          MyUserViewSet)
+
 
 router = DefaultRouter()
 router.register(r'recipes', RecipeViewSet, basename='recipe')

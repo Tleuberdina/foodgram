@@ -1,0 +1,47 @@
+volumes:
+  pg_data_production:
+  static_volume:
+  media_volume:
+
+services:
+  db:
+    image: postgres:13.10
+    env_file: .env
+    volumes:
+      - pg_data_production:/var/lib/postgresql/data
+    #healthcheck:
+      #test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      #interval: 5s
+      #timeout: 5s
+      #retries: 10
+  backend:
+    image: yuliya2006/foodgram_backend
+    env_file: .env
+    depends_on:
+      - db
+        #condition: service_healthy     
+    volumes:
+      - static_volume:/backend_static
+      - media_volume:/app/media
+      #- ./backend/data:/app/data
+    #command: >
+      #sh -c "python manage.py wait_for_db &&
+             #python manage.py migrate &&
+             #python manage.py import_json /app/data/ingredients.json &&
+             #gunicorn --bind 0.0.0.0:8800 backend.wsgi"
+  frontend:
+    image: yuliya2006/foodgram_frontend
+    env_file: .env
+    command: cp -r /app/build/. /frontend_static/
+    volumes:
+      - static_volume:/frontend_static
+  gateway:
+    image: yuliya2006/foodgram_gateway
+    env_file: .env
+    depends_on:
+      - backend
+    volumes:
+      - static_volume:/staticfiles/
+      - media_volume:/media/
+    ports:
+      - 8800:80

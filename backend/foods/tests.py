@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from django.test import Client, TestCase
-from foods.models import Recipe
+from foods import models
 
 
 class RecipeAPITestCase(TestCase):
@@ -25,7 +25,6 @@ class RecipeAPITestCase(TestCase):
             "cooking_time": "20",
             "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
         }
-
         response = self.guest_client.post('/api/recipes/', data=data)
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
         self.assertTrue(models.Recipe.objects.filter(name='Test').exists()) 

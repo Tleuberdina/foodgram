@@ -2,7 +2,6 @@ from collections import OrderedDict
 
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-
 from users.serializers import (Base64ImageField,
                                MyUserAvatarUsernameSerializer,
                                MyUserSerializer)

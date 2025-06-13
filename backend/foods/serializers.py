@@ -80,7 +80,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         request = self.context.get('request')
-        serializer = MyUserAvatarUsernameSerializer(
+        serializer = MyUserSerializer(
             obj.author,
             context={'request': request}
         )

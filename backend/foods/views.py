@@ -36,7 +36,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
     pagination_class = CustomLimitPagination
     filterset_class = RecipeFilter
-    ordering_fields = ('pub_date',)
+    ordering_fields = ('-pub_date',)
     lookup_field = 'id'
 
     def get_permissions(self):

@@ -87,7 +87,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_ingredients(self, obj):
-        ingredient_recipes = obj.ingredientrecipe_set.all()
+        ingredient_recipes = obj.ingredients_relations.all()
         return IngredientRecipeOutputSerializer(
             ingredient_recipes, many=True
         ).data

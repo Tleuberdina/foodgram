@@ -72,7 +72,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             'ingredients',
             'is_favorited',
             'is_in_shopping_cart',
-            #'text',
+            'text',
             'cooking_time',
             'author'
         )

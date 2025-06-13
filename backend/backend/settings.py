@@ -168,3 +168,11 @@ AUTHENTICATION_BACKENDS = [
     'users.auth_backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://muyfoodgram.hopto.org',
+]
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

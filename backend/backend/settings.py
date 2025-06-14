@@ -134,9 +134,9 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / '/backend_static/static/'
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'frontend' / 'src' / 'image',
-]
+#STATICFILES_DIRS = [
+    #BASE_DIR / 'frontend' / 'src' / 'image',
+#]
 
 MEDIA_URL = '/media/'
 

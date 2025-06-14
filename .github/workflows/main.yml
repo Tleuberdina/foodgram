@@ -9,13 +9,29 @@ jobs:
   tests:
     # Разворачиваем окружение:
     runs-on: ubuntu-latest
-
+    
+    services:
+      postgres:  # Контейнер с PostgreSQL
+        image: postgres:13.10  # Версия как в вашем docker-compose.production.yml
+        env:
+          POSTGRES_USER: postgres  # Учетные данные для тестов
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
     # Копируем код проекта
     - name: Check out code
       uses: actions/checkout@v3
     # Устанавливаем Python с помощью action
     - name: Set up Python
+
       uses: actions/setup-python@v4
     # В action setup-python@v4 передаём параметр — версию Python
       with:
@@ -32,6 +48,8 @@ jobs:
       run: python -m isort --check-only backend/
     # Запускаем flake8
     - name: Test with flake8 and django tests
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
       # Вызываем flake8 и указываем ему,
       # что нужно проверить файлы только в папке backend/
       run: |

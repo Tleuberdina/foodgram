@@ -26,7 +26,7 @@ class RecipeAPITestCase(TestCase):
         """Проверка создания рецепта."""
         data = {
             "ingredients": [
-                {"id": 100, "amount": 1}
+                {"id": 100, "amount": "1"}
             ],
             "tags": [1],
             "name": "Test",

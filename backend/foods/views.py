@@ -33,10 +33,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
     queryset = Recipe.objects.prefetch_related('tags', 'ingredients_relations__ingredient')
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
+    filter_backends = (DjangoFilterBackend,)
     pagination_class = CustomLimitPagination
     filterset_class = RecipeFilter
-    ordering_fields = ('-pub_date',)
+    ordering = ('-pub_date',)
     lookup_field = 'id'
 
     def get_permissions(self):

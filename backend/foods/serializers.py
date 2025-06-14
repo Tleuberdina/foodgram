@@ -55,7 +55,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     tags = serializers.SlugRelatedField(
         many=True,
-        slug_field='slug',
+        slug_field='id',
         queryset=Tag.objects.all()
     )
     ingredients = serializers.SerializerMethodField()

@@ -46,7 +46,7 @@ class TokenSerializer(TokenCreateSerializer):
 
 
 class MyUserSerializer(UserSerializer):
-    avatar = Base64ImageField(required=False, allow_null=True, use_url=True)
+    avatar = Base64ImageField(required=False, use_url=True)
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta(UserSerializer.Meta):

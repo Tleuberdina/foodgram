@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
+from rest_framework.test import APIClient
 from foods import models
 
 User = get_user_model()
@@ -9,13 +10,13 @@ User = get_user_model()
 
 class RecipeAPITestCase(TestCase):
     def setUp(self):
-        self.guest_client = Client()
+        self.guest_client = APIClient()
         self.user = User.objects.create_user(
             username='testuser',
             email='ooo@mail.ru',
             password='testpass1232025'
         )
-        self.client.force_login(self.user)
+        self.client = APIClient()
         from rest_framework.authtoken.models import Token
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
@@ -44,7 +45,7 @@ class RecipeAPITestCase(TestCase):
             "tags": [1],
             "name": "Test",
             "text": "приготовление авокадо",
-            "cooking_time": "20",
+            "cooking_time": 20,
             "image": "data:image/png;base64,iVBORw0K"
                      "GgoAAAANSUhEUgAAAAEAAAABAgMAAAB"
                      "ieywaAAAACVBMVEUAAAD///9fX1/S0e"
@@ -55,9 +56,7 @@ class RecipeAPITestCase(TestCase):
         response = self.client.post(
             '/api/recipes/',
             data=data,
-            format='json',
-            secure=True,
-            HTTP_AUTHORIZATION=f'Token {self.user.auth_token.key}'
+            format='json'
         )
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
         self.assertTrue(models.Recipe.objects.filter(name='Test').exists())

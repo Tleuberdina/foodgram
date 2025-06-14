@@ -2,8 +2,8 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
-from rest_framework.test import APIClient
 from foods import models
+from rest_framework.test import APIClient
 
 User = get_user_model()
 

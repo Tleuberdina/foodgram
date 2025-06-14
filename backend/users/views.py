@@ -73,7 +73,7 @@ class MyUserAvatarViewSet(viewsets.ViewSet):
 
     def delete(self, request):
         user = request.user
-        default_avatar_path = 'images/avatar-icon.png'
+        default_avatar_path = 'avatar-icon.png'
         user.avatar = default_avatar_path
         user.save()
         return Response(

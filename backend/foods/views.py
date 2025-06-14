@@ -31,12 +31,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     скачать список покупок, сформированный из рецептов, добавленных
     в список покупок для модели Recipe.
     """
-    queryset = Recipe.objects.prefetch_related('tags', 'ingredients_relations__ingredient')
+    queryset = Recipe.objects.prefetch_related(
+        'tags',
+        'ingredients_relations__ingredient'
+    ).order_by('-pub_date')
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     pagination_class = CustomLimitPagination
     filterset_class = RecipeFilter
-    ordering = ('-pub_date',)
     lookup_field = 'id'
 
     def get_permissions(self):

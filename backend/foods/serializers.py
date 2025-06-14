@@ -53,11 +53,7 @@ class TagSerializer(serializers.ModelSerializer):
 class RecipeReadSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=False, allow_null=True, use_url=True)
     author = serializers.SerializerMethodField()
-    tags = serializers.SlugRelatedField(
-        many=True,
-        slug_field='id',
-        queryset=Tag.objects.all()
-    )
+    tags = TagSerializer(many=True, write_only=True)
     ingredients = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()

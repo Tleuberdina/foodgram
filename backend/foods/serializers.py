@@ -53,7 +53,11 @@ class TagSerializer(serializers.ModelSerializer):
 class RecipeReadSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=False, allow_null=True, use_url=True)
     author = serializers.SerializerMethodField()
-    tags = TagSerializer(many=True, write_only=True)
+    tags = serializers.SlugRelatedField(
+        many=True,
+        slug_field='name',
+        queryset=Tag.objects.all()
+    )
     ingredients = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -136,10 +140,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def validate_ingredients(self, value):
         if not value:
-            raise serializers.ValidationError("Нужно указать хотя бы один ингредиент")
+            raise serializers.ValidationError(
+                "Нужно указать хотя бы один ингредиент"
+            )
         ingredient_ids = [item['id'] for item in value]
         if len(ingredient_ids) != len(set(ingredient_ids)):
-            raise serializers.ValidationError("Ингредиенты не должны повторяться")
+            raise serializers.ValidationError(
+                "Ингредиенты не должны повторяться"
+            )
         return value
 
     def create(self, validated_data):

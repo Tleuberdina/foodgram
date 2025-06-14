@@ -61,11 +61,19 @@ class MyUserSerializer(UserSerializer):
             'avatar'
         )
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if not data.get('avatar'):
+            request = self.context.get('request')
+            data['avatar'] = request.build_absolute_uri('images/avatar-icon.png')
+        return data
+    
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return obj.subscribers.filter(user=request.user).exists()
         return False
+
 
 
 class MyUserAvatarSerializer(serializers.ModelSerializer):

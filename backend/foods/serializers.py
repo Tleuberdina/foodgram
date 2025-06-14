@@ -53,11 +53,7 @@ class TagSerializer(serializers.ModelSerializer):
 class RecipeReadSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=False, allow_null=True, use_url=True)
     author = serializers.SerializerMethodField()
-    tags = serializers.SlugRelatedField(
-        many=True,
-        slug_field='name',
-        queryset=Tag.objects.all()
-    )
+    tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -76,7 +72,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             'cooking_time',
             'author'
         )
-        read_only_fields = ('author',)
+        read_only_fields = ('author', 'tags')
 
     def get_author(self, obj):
         request = self.context.get('request')

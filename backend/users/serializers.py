@@ -66,10 +66,10 @@ class MyUserSerializer(UserSerializer):
         if not data.get('avatar'):
             request = self.context.get('request')
             data['avatar'] = request.build_absolute_uri(
-                '/static/images/avatar-icon.png'
+                '/static/avatar-icon.png'
             )
         return data
-   
+
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:

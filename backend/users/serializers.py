@@ -69,13 +69,12 @@ class MyUserSerializer(UserSerializer):
                 '/static/images/avatar-icon.png'
             )
         return data
-    
+   
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return obj.subscribers.filter(user=request.user).exists()
         return False
-
 
 
 class MyUserAvatarSerializer(serializers.ModelSerializer):

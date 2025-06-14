@@ -27,12 +27,12 @@ class RecipeAPITestCase(TestCase):
 
     def test_recipe_creation(self):
         """Проверка создания рецепта."""
-        tags = models.Tag.objects.create(
+        models.Tag.objects.create(
             id=1,
             name="Завтрак",
             slug="breakfast"
         )
-        ingredients = models.Ingredient.objects.create(
+        models.Ingredient.objects.create(
             id=100,
             name="Авокадо",
             measurement_unit="шт"

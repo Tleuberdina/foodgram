@@ -16,6 +16,9 @@ class RecipeAPITestCase(TestCase):
             password='testpass1232025'
         )
         self.client.force_login(self.user)
+        from rest_framework.authtoken.models import Token
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
 
     def test_list_exists(self):
         """Проверка доступности списка рецептов."""
@@ -24,9 +27,19 @@ class RecipeAPITestCase(TestCase):
 
     def test_recipe_creation(self):
         """Проверка создания рецепта."""
+        tag = models.Tag.objects.create(
+            id=1,
+            name="Завтрак",
+            slug="breakfast"
+        )
+        ingredient = models.Ingredient.objects.create(
+            id=100,
+            name="Авокадо",
+            measurement_unit="шт"
+        )
         data = {
             "ingredients": [
-                {"id": 100, "amount": "1"}
+                {"id": 100, "amount": 1}
             ],
             "tags": [1],
             "name": "Test",
@@ -39,6 +52,12 @@ class RecipeAPITestCase(TestCase):
                      "AAACklEQVQImWNoAAAAggCByxOyYQAAA"
                      "ABJRU5ErkJggg==",
         }
-        response = self.client.post('/api/recipes/', data=data)
+        response = self.client.post(
+            '/api/recipes/',
+            data=data,
+            format='json',
+            secure=True,
+            HTTP_AUTHORIZATION=f'Token {self.user.auth_token.key}'
+        )
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
         self.assertTrue(models.Recipe.objects.filter(name='Test').exists())

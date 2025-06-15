@@ -20,15 +20,14 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class IngredientInputSerializer(serializers.Serializer):
     """Сериализатор ТОЛЬКО для ввода данных (не связан с моделью)"""
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(required=False)
+    name = serializers.CharField(required=False)
     amount = serializers.IntegerField(min_value=1)
 
-    def validate_id(self, value):
-        if not Ingredient.objects.filter(id=value).exists():
-            raise serializers.ValidationError(
-                f"Ингредиент '{value}' не найден"
-            )
-        return value
+    def validate(self, data):
+        if not any([data.get('id'), data.get('name')]):
+            raise serializers.ValidationError("Укажите 'id' или 'name' ингредиента.")
+        return data
 
 
 class IngredientRecipeOutputSerializer(serializers.ModelSerializer):
@@ -139,12 +138,25 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Нужно указать хотя бы один ингредиент"
             )
-        ingredient_ids = [item['id'] for item in value]
+        validated_ingredients = []
+        for item in value:
+            if 'id' in item:
+                ingredient = Ingredient.objects.filter(id=item['id']).first()
+            elif 'name' in item:
+                ingredient = Ingredient.objects.filter(name__iexact=item['name']).first()
+            else:
+                raise serializers.ValidationError("Укажите 'id' или 'name' ингредиента.")
+
+            if not ingredient:
+                raise serializers.ValidationError(f"Ингредиент не найден: {item}")
+            validated_ingredients.append({
+                'id': ingredient.id,
+                'amount': item['amount']
+            })
+        ingredient_ids = [item['id'] for item in validated_ingredients]
         if len(ingredient_ids) != len(set(ingredient_ids)):
-            raise serializers.ValidationError(
-                "Ингредиенты не должны повторяться"
-            )
-        return value
+            raise serializers.ValidationError("Ингредиенты не должны повторяться.")
+        return validated_ingredients
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
@@ -163,18 +175,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        required_fields = [
-            'name',
-            'text',
-            'cooking_time',
-            'ingredients',
-            'tags'
-        ]
-        for field in required_fields:
-            if field not in validated_data:
-                raise serializers.ValidationError(
-                    {field: "Это поле обязательно для обновления"}
-                )
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
         instance.cooking_time = validated_data.get(
@@ -183,20 +183,17 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         )
         if 'image' in validated_data:
             instance.image = validated_data['image']
-        tags = validated_data.pop('tags')
-        instance.tags.clear()
-        instance.tags.set(tags)
-        ingredients_data = validated_data.pop('ingredients')
-        instance.ingredientrecipe_set.all().delete()
-        for ingredient_data in ingredients_data:
-            ingredient = Ingredient.objects.get(id=ingredient_data['id'])
-            IngredientRecipe.objects.create(
-                recipe=instance,
-                ingredient=ingredient,
-                amount=ingredient_data['amount']
-            )
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        if 'tags' in validated_data:
+            instance.tags.clear()
+            instance.tags.set(validated_data['tags'])
+        if 'ingredients' in validated_data:
+            instance.ingredientrecipe_set.all().delete()
+            for ingredient_data in validated_data['ingredients']:
+                IngredientRecipe.objects.create(
+                    recipe=instance,
+                    ingredient_id=ingredient_data['id'],
+                    amount=ingredient_data['amount']
+                )
         instance.save()
         return instance
 
@@ -305,7 +302,7 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     recipes = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('avatar', 'username', 'recipes')
+        fields = ('id', 'avatar', 'username', 'recipes')
         model = User
 
     def get_recipes(self, obj):

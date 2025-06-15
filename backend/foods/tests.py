@@ -23,7 +23,7 @@ class RecipeAPITestCase(TestCase):
 
     def test_list_exists(self):
         """Проверка доступности списка рецептов."""
-        response = self.guest_client.get('/api/recipes/', follow=True)
+        response = self.guest_client.get('/api/recipes')
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_recipe_creation(self):
@@ -54,10 +54,9 @@ class RecipeAPITestCase(TestCase):
                      "ABJRU5ErkJggg==",
         }
         response = self.client.post(
-            '/api/recipes/',
+            '/api/recipes',
             data=data,
             format='json',
-            follow=True,
             HTTP_AUTHORIZATION=f'Token {self.token.key}'
         )
         self.assertEqual(response.status_code, HTTPStatus.CREATED)

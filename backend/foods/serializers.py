@@ -140,14 +140,27 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Нужно указать хотя бы один ингредиент"
             )
+        existing_ingredients = {}
+        if self.instance and hasattr(self.instance, 'ingredients_relations'):
+            existing_ingredients = {
+                rel.ingredient_id: rel.amount
+                for rel in self.instance.ingredients_relations.all()
+            }
         validated_ingredients = []
         for item in value:
             if 'id' in item:
-                ingredient = Ingredient.objects.filter(id=item['id']).first()
+                ingredient = Ingredient.objects.filter(
+                    id=item['id']).first()
             elif 'name' in item:
                 ingredient = Ingredient.objects.filter(
                     name__iexact=item['name']
                 ).first()
+            elif self.instance and len(existing_ingredients) == len(value):
+                ingredient_id = list(
+                    existing_ingredients.keys()
+                )[len(validated_ingredients)]
+                ingredient = Ingredient.objects.filter(
+                    id=ingredient_id).first()
             else:
                 raise serializers.ValidationError(
                     'Укажите "id" или "name" ингредиента.'
@@ -158,7 +171,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 )
             validated_ingredients.append({
                 'id': ingredient.id,
-                'amount': item['amount']
+                'amount': item.get(
+                    'amount', existing_ingredients.get(ingredient.id, 1))
             })
         ingredient_ids = [item['id'] for item in validated_ingredients]
         if len(ingredient_ids) != len(set(ingredient_ids)):
@@ -311,7 +325,7 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     recipes = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('id', 'avatar', 'username', 'recipes')
+        fields = ('id', 'email', 'avatar', 'username', 'recipes')
         model = User
 
     def get_recipes(self, obj):

@@ -159,9 +159,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 ingredient = Ingredient.objects.filter(
                     name__iexact=item['name']
                 ).first()
-            elif ('amount' in item and
-                  existing_ingredients and
-                  index < len(existing_ingredients)):
+            elif (
+                'amount' in item
+                and existing_ingredients
+                and index < len(existing_ingredients)
+            ):
                 ingredient_id = list(existing_ingredients.keys())[index]
                 ingredient = Ingredient.objects.filter(
                     id=ingredient_id).first()

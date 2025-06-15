@@ -94,15 +94,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'detail': 'У вас недостаточно прав.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        data = request.data.copy()
-        if 'ingredients' not in data:
-            data['ingredients'] = [
-                {'id': rel.ingredient_id, 'amount': rel.amount}
-                for rel in recipe.ingredients_relations.all()
-            ]
         serializer = self.get_serializer(
             recipe,
-            data=data,
+            data=request.data,
             partial=True,
             context={'request': request}
         )

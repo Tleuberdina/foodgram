@@ -143,11 +143,15 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         existing_ingredients = {}
         if self.instance and hasattr(self.instance, 'ingredients_relations'):
             existing_ingredients = {
-                rel.ingredient_id: rel.amount
+                rel.ingredient_id: {
+                    'id': rel.ingredient_id,
+                    'amount': rel.amount,
+                    'name': rel.ingredient.name
+                }
                 for rel in self.instance.ingredients_relations.all()
             }
         validated_ingredients = []
-        for item in value:
+        for index, item in enumerate(value):
             if 'id' in item:
                 ingredient = Ingredient.objects.filter(
                     id=item['id']).first()
@@ -155,10 +159,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 ingredient = Ingredient.objects.filter(
                     name__iexact=item['name']
                 ).first()
-            elif self.instance and len(existing_ingredients) == len(value):
-                ingredient_id = list(
-                    existing_ingredients.keys()
-                )[len(validated_ingredients)]
+            elif 'amount' in item and existing_ingredients and index < len(
+                existing_ingredients):
+                ingredient_id = list(existing_ingredients.keys())[index]
                 ingredient = Ingredient.objects.filter(
                     id=ingredient_id).first()
             else:
@@ -172,7 +175,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             validated_ingredients.append({
                 'id': ingredient.id,
                 'amount': item.get(
-                    'amount', existing_ingredients.get(ingredient.id, 1))
+                    'amount', existing_ingredients.get(
+                        ingredient.id, {}).get('amount', 1))
             })
         ingredient_ids = [item['id'] for item in validated_ingredients]
         if len(ingredient_ids) != len(set(ingredient_ids)):

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.templatetags.static import static
 
 
 class MyUser(AbstractUser):
@@ -20,14 +21,18 @@ class MyUser(AbstractUser):
         return self.email
 
     @property
-    def avatar(self):
+    def avatar_url(self):
         if hasattr(self, '_cached_avatar_url'):
             return self._cached_avatar_url
 
-        if self.__dict__.get('avatar') and hasattr(self.avatar, 'url'):
+        if self.avatar and hasattr(self.avatar, 'url'):
             url = self.avatar.url
         else:
             url = static('images/avatar-icon.png')
-        
         self._cached_avatar_url = url
         return url
+
+    def __getattr__(self, name):
+        if name == 'avatar':
+            return self.avatar_url
+        return super().__getattribute__(name)

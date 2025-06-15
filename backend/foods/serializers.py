@@ -26,7 +26,9 @@ class IngredientInputSerializer(serializers.Serializer):
 
     def validate(self, data):
         if not any([data.get('id'), data.get('name')]):
-            raise serializers.ValidationError("Укажите 'id' или 'name' ингредиента.")
+            raise serializers.ValidationError(
+                'Укажите "id" или "name" ингредиента.'
+            )
         return data
 
 
@@ -143,19 +145,26 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             if 'id' in item:
                 ingredient = Ingredient.objects.filter(id=item['id']).first()
             elif 'name' in item:
-                ingredient = Ingredient.objects.filter(name__iexact=item['name']).first()
+                ingredient = Ingredient.objects.filter(
+                    name__iexact=item['name']
+                ).first()
             else:
-                raise serializers.ValidationError("Укажите 'id' или 'name' ингредиента.")
-
+                raise serializers.ValidationError(
+                    'Укажите "id" или "name" ингредиента.'
+                )
             if not ingredient:
-                raise serializers.ValidationError(f"Ингредиент не найден: {item}")
+                raise serializers.ValidationError(
+                    f'Ингредиент не найден: {item}'
+                )
             validated_ingredients.append({
                 'id': ingredient.id,
                 'amount': item['amount']
             })
         ingredient_ids = [item['id'] for item in validated_ingredients]
         if len(ingredient_ids) != len(set(ingredient_ids)):
-            raise serializers.ValidationError("Ингредиенты не должны повторяться.")
+            raise serializers.ValidationError(
+                'Ингредиенты не должны повторяться.'
+            )
         return validated_ingredients
 
     def create(self, validated_data):

@@ -98,7 +98,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe,
             context={'request': request}
         )
-        return Response(serializer.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, id):
         try:
@@ -113,11 +116,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'detail': 'У вас недостаточно прав.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        serializer = RecipeCreateSerializer(
-            recipe,
-            context={'request': request}
-        )
-        return Response(serializer.data)
+        recipe.delete()
+        return Response(
+            {'detail': 'Рецепт успешно удален.'},
+            status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True,
             methods=['get'],
@@ -172,12 +174,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class IngredientViewSet(viewsets.ModelViewSet):
     """Обрабатывает операции CRUD для модели Ingredient."""
-    queryset = Ingredient.objects.all()
+    queryset = Ingredient.objects.all().order_by('name')
     serializer_class = IngredientSerializer
     permission_classes = (permissions.IsAdminUser,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
-
+    
     def get_permissions(self):
         if self.action == 'retrieve' or self.action == 'list':
             return (ReadOnly(),)
@@ -232,9 +234,9 @@ class SubscribeView(APIView):
         try:
             recipes_limit = int(recipes_limit)
         except (TypeError, ValueError):
-            recipes_limit = 3
+            recipes_limit = 6
 
-        serializer = SubscriptionsSerializer(page, many=True, context={
+        serializer = FavoriteListSerializer(page, many=True, context={
             'request': request,
             'recipes_limit': recipes_limit
         })

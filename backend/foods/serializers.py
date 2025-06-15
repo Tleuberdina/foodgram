@@ -241,11 +241,17 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
 class RecipeSubscriptionsSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=False, allow_null=True, use_url=True)
+    author = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
-        fields = ('name', 'image')
+        fields = ('author','name', 'cooking_time', 'image')
         read_only_fields = ('author',)
+
+    def get_author(self, obj):
+        request = self.context.get('request')
+        serializer = MyUserSerializer(obj.author, context={'request': request})
+        return serializer.data
 
 
 class SubscribeSerializer(serializers.ModelSerializer):

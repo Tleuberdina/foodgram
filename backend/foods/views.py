@@ -251,7 +251,7 @@ class SubscribeView(APIView):
         try:
             recipes_limit = int(recipes_limit) if recipes_limit else None
         except (TypeError, ValueError):
-            recipes_limit = None
+            recipes_limit = 6
 
         serializer = SubscriptionsSerializer(page, many=True, context={
             'request': request,

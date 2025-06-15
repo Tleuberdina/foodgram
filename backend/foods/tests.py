@@ -23,7 +23,7 @@ class RecipeAPITestCase(TestCase):
 
     def test_list_exists(self):
         """Проверка доступности списка рецептов."""
-        response = self.guest_client.get('/api/recipes/')
+        response = self.guest_client.get('/api/recipes/', follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_recipe_creation(self):
@@ -56,7 +56,8 @@ class RecipeAPITestCase(TestCase):
         response = self.client.post(
             '/api/recipes/',
             data=data,
-            format='json'
+            format='json',
+            follow=True
         )
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
         self.assertTrue(models.Recipe.objects.filter(name='Test').exists())

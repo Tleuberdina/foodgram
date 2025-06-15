@@ -20,7 +20,7 @@ from .serializers import (FavoriteListSerializer,
                           FavoriteShoppingCartSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
                           ShoppingCartListSerializer, SubscribeSerializer,
-                          SubscriptionsSerializer, TagSerializer)
+                          TagSerializer)
 
 User = get_user_model()
 
@@ -179,7 +179,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAdminUser,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
-    
+
     def get_permissions(self):
         if self.action == 'retrieve' or self.action == 'list':
             return (ReadOnly(),)

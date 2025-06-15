@@ -139,7 +139,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
         return Response({
             "short-link":
-            f"https://{request.get_host()}s/{recipe.short_code}"
+            f"https://{request.get_host()}/s/{recipe.short_code}"
         })
 
     @action(
@@ -249,9 +249,9 @@ class SubscribeView(APIView):
         page = paginator.paginate_queryset(authors, request)
         recipes_limit = request.query_params.get('recipes_limit')
         try:
-            recipes_limit = int(recipes_limit)
+            recipes_limit = int(recipes_limit) if recipes_limit else None
         except (TypeError, ValueError):
-            recipes_limit = 6
+            recipes_limit = None
 
         serializer = SubscriptionsSerializer(page, many=True, context={
             'request': request,

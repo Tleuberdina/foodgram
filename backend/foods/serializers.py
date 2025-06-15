@@ -305,7 +305,7 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         request = self.context.get('request')
         recipes_limit = self.context.get('recipes_limit')
-        recipes_qs = obj.recipes.all()
+        recipes_qs = obj.recipes.all().order_by('-pub_date')
         if recipes_limit is not None:
             recipes_qs = recipes_qs[:recipes_limit]
         serializer = RecipeSubscriptionsSerializer(

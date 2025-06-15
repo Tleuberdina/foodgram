@@ -57,7 +57,7 @@ class RecipeAPITestCase(TestCase):
             '/api/recipes/',
             data=data,
             format='json',
-            follow=True
+            HTTP_AUTHORIZATION=f'Token {self.token.key}'
         )
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
         self.assertTrue(models.Recipe.objects.filter(name='Test').exists())

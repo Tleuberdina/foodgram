@@ -20,7 +20,7 @@ from .serializers import (FavoriteListSerializer,
                           FavoriteShoppingCartSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
                           ShoppingCartListSerializer, SubscribeSerializer,
-                          TagSerializer)
+                          SubscriptionsSerializer, TagSerializer)
 
 User = get_user_model()
 
@@ -96,12 +96,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         serializer = RecipeCreateSerializer(
             recipe,
+            data=request.data,
+            partial=True,
             context={'request': request}
         )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, id):
         try:
@@ -137,8 +139,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
         return Response({
             "short-link":
-            f'{request.build_absolute_uri('/')}s/{recipe.short_code}'
+            f"https://{request.get_host()}s/{recipe.short_code}"
         })
+    
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='s/(?P<short_code>[a-f0-9]{3})'
+    )
+    def short_link_redirect(self, request, short_code=None):
+        recipes = Recipe.objects.all()
+        for recipe in recipes:
+            if recipe.short_code[:3] == short_code:
+                return redirect(f"/recipes/{recipe.id}/")
+        
+        return Response(
+            {"detail": "Рецепт не найден"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     @action(
         detail=False,
@@ -236,7 +254,7 @@ class SubscribeView(APIView):
         except (TypeError, ValueError):
             recipes_limit = 6
 
-        serializer = FavoriteListSerializer(page, many=True, context={
+        serializer = SubscriptionsSerializer(page, many=True, context={
             'request': request,
             'recipes_limit': recipes_limit
         })

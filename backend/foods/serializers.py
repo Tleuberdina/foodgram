@@ -175,13 +175,21 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {field: "Это поле обязательно для обновления"}
                 )
+        instance.name = validated_data.get('name', instance.name)
+        instance.text = validated_data.get('text', instance.text)
+        instance.cooking_time = validated_data.get(
+            'cooking_time',
+            instance.cooking_time
+        )
+        if 'image' in validated_data:
+            instance.image = validated_data['image']
         tags = validated_data.pop('tags')
         instance.tags.clear()
         instance.tags.set(tags)
         ingredients_data = validated_data.pop('ingredients')
         instance.ingredientrecipe_set.all().delete()
         for ingredient_data in ingredients_data:
-            ingredient = Ingredient.objects.get(name=ingredient_data['name'])
+            ingredient = Ingredient.objects.get(id=ingredient_data['id'])
             IngredientRecipe.objects.create(
                 recipe=instance,
                 ingredient=ingredient,

@@ -337,7 +337,6 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
-            'is_subscribed',
             'avatar',
             'recipes')
         model = User

@@ -152,6 +152,19 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             }
         validated_ingredients = []
         for index, item in enumerate(value):
+            if 'amount' in item and not ('id' in item or 'name' in item):
+                if not existing_ingredients:
+                    raise serializers.ValidationError(
+                        'Нельзя обновить amount без указания ингредиента'
+                    )
+                try:
+                    ingredient_id = list(existing_ingredients.keys())[index]
+                    ingredient_data = existing_ingredients[ingredient_id]
+                    item['id'] = ingredient_id
+                except IndexError:
+                    raise serializers.ValidationError(
+                        f'Несоответствие количества ингредиентов'
+                    )
             if 'id' in item:
                 ingredient = Ingredient.objects.filter(
                     id=item['id']).first()
@@ -159,14 +172,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 ingredient = Ingredient.objects.filter(
                     name__iexact=item['name']
                 ).first()
-            elif (
-                'amount' in item
-                and existing_ingredients
-                and index < len(existing_ingredients)
-            ):
-                ingredient_id = list(existing_ingredients.keys())[index]
-                ingredient = Ingredient.objects.filter(
-                    id=ingredient_id).first()
             else:
                 raise serializers.ValidationError(
                     'Укажите "id" или "name" ингредиента.'
@@ -217,17 +222,19 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             instance.tags.clear()
             instance.tags.set(validated_data['tags'])
         if 'ingredients' in validated_data:
-            instance.ingredients_relations.all().delete()
-            ingredients_data = validated_data['ingredients']
-            ingredient_recipe_objects = [
-                IngredientRecipe(
-                    recipe=instance,
-                    ingredient_id=ingredient_data['id'],
-                    amount=ingredient_data['amount']
-                )
-                for ingredient_data in ingredients_data
-            ]
-            IngredientRecipe.objects.bulk_create(ingredient_recipe_objects)
+            current_ids = {
+                rel.ingredient_id for rel in instance.ingredients_relations.all()
+            }
+            new_ids = {ing['id'] for ing in validated_data['ingredients']}
+            to_delete = current_ids - new_ids
+        if to_delete:
+            instance.ingredients_relations.filter(ingredient_id__in=to_delete).delete()
+        for ing_data in validated_data['ingredients']:
+            IngredientRecipe.objects.update_or_create(
+                recipe=instance,
+                ingredient_id=ing_data['id'],
+                defaults={'amount': ing_data['amount']}
+            )
         instance.save()
         return instance
 

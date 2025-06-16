@@ -150,13 +150,13 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             ingredient_id = item['id']
             if ingredient_id in seen_ids:
                 raise serializers.ValidationError(
-                    f'Ингредиент с id={ingredient_id} указан более одного раза.'
+                    'Ингредиент указан более одного раза.'
                 )
             seen_ids.add(ingredient_id)
             ingredient = Ingredient.objects.filter(id=ingredient_id).first()
             if not ingredient:
                 raise serializers.ValidationError(
-                    f'Ингредиент с id={ingredient_id} не найден.'
+                    'Ингредиент не найден.'
                 )
             validated_ingredients.append({
                 'id': ingredient.id,

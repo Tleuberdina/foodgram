@@ -151,7 +151,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def short_link_redirect(self, request, short_code=None):
         recipes = Recipe.objects.all().only('id')
         for recipe in recipes:
-            if recipe.short_code == short_code:
+            if recipe.short_code[:3] == short_code:
                 return redirect(reverse(
                     'recipe-detail', kwargs={'id': recipe.id})
                 )

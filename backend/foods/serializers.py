@@ -141,25 +141,27 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 "Нужно указать хотя бы один ингредиент"
             )
         validated_ingredients = []
+        seen_ids = set()
         for item in value:
             if 'id' not in item or 'amount' not in item:
                 raise serializers.ValidationError(
                     'Каждый ингредиент должен содержать "id" и "amount".'
                 )
-            ingredient = Ingredient.objects.filter(id=item['id']).first()
+            ingredient_id = item['id']
+            if ingredient_id in seen_ids:
+                raise serializers.ValidationError(
+                    f'Ингредиент с id={ingredient_id} указан более одного раза.'
+                )
+            seen_ids.add(ingredient_id)
+            ingredient = Ingredient.objects.filter(id=ingredient_id).first()
             if not ingredient:
                 raise serializers.ValidationError(
-                    f'Ингредиент с id={item["id"]} не найден.'
+                    f'Ингредиент с id={ingredient_id} не найден.'
                 )
             validated_ingredients.append({
                 'id': ingredient.id,
                 'amount': item['amount']
             })
-        ingredient_ids = [item['id'] for i in validated_ingredients]
-        if len(ingredient_ids) != len(set(ingredient_ids)):
-            raise serializers.ValidationError(
-                'Ингредиенты не должны повторяться.'
-            )
         return validated_ingredients
 
     def create(self, validated_data):
@@ -187,25 +189,40 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if tags is not None:
             instance.tags.set(tags)
         if ingredients_data is not None:
-            current_relations = {rel.ingredient_id: rel for rel
-                                 in instance.ingredients_relations.all()}
-            new_ids = set(item['id'] for item in ingredients_data)
-            for ingredient_id in list(current_relations.keys()):
-                if ingredient_id not in new_ids:
-                    current_relations[ingredient_id].delete()
-            for item in ingredients_data:
-                ingredient_id = item['id']
-                amount = item['amount']
-                if ingredient_id in current_relations:
-                    rel = current_relations[ingredient_id]
-                    rel.amount = amount
-                    rel.save()
-                else:
-                    IngredientRecipe.objects.create(
-                        recipe=instance,
-                        ingredient_id=ingredient_id,
-                        amount=amount
-                    )
+            current_ingredients = instance.ingredients_relations.all()
+            current_ingredient_ids = set(
+                current_ingredients.values_list('ingredient_id', flat=True)
+            )
+            new_ingredient_ids = {ingredient['id'] for ingredient
+                                  in ingredients_data}
+            ingredients_to_delete = current_ingredient_ids - new_ingredient_ids
+            if ingredients_to_delete:
+                instance.ingredients_relations.filter(
+                    ingredient_id__in=ingredients_to_delete
+                ).delete()
+            new_ingredients_dict = {
+                item['id']: item['amount'] for item in ingredients_data
+            }
+            ingredients_to_update = current_ingredient_ids & new_ingredient_ids
+            for ingredient_relation in current_ingredients.filter(
+                ingredient_id__in=ingredients_to_update
+            ):
+                ingredient_relation.amount = (
+                    new_ingredients_dict[
+                        ingredient_relation.ingredient_id
+                    ]
+                )
+                ingredient_relation.save()
+            ingredients_to_create = new_ingredient_ids - current_ingredient_ids
+            ingredient_recipe_objects = [
+                IngredientRecipe(
+                    recipe=instance,
+                    ingredient_id=ingredient_id,
+                    amount=new_ingredients_dict[ingredient_id]
+                )
+                for ingredient_id in ingredients_to_create
+            ]
+            IngredientRecipe.objects.bulk_create(ingredient_recipe_objects)
         return instance
 
     def to_representation(self, instance):

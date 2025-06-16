@@ -187,9 +187,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if tags is not None:
             instance.tags.set(tags)
         if ingredients_data is not None:
-            current_relations = {rel.ingredient_id: rel
-                for rel in instance.ingredients_relations.all()
-            }
+            current_relations = {rel.ingredient_id: rel for rel
+                                 in instance.ingredients_relations.all()}
             new_ids = set(item['id'] for item in ingredients_data)
             for ingredient_id in list(current_relations.keys()):
                 if ingredient_id not in new_ids:

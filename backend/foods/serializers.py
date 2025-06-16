@@ -140,52 +140,23 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Нужно указать хотя бы один ингредиент"
             )
-        existing_ingredients = {}
-        if self.instance and hasattr(self.instance, 'ingredients_relations'):
-            existing_ingredients = {
-                rel.ingredient_id: {
-                    'id': rel.ingredient_id,
-                    'amount': rel.amount,
-                    'name': rel.ingredient.name
-                }
-                for rel in self.instance.ingredients_relations.all()
-            }
         validated_ingredients = []
-        for index, item in enumerate(value):
-            if 'amount' in item and not ('id' in item or 'name' in item):
-                if not existing_ingredients:
-                    raise serializers.ValidationError(
-                        'Нельзя обновить amount без указания ингредиента'
-                    )
-                try:
-                    ingredient_id = list(existing_ingredients.keys())[index]
-                    item['id'] = ingredient_id
-                except IndexError:
-                    raise serializers.ValidationError(
-                        'Несоответствие количества ингредиентов'
-                    )
-            if 'id' in item:
-                ingredient = Ingredient.objects.filter(
-                    id=item['id']).first()
-            elif 'name' in item:
-                ingredient = Ingredient.objects.filter(
-                    name__iexact=item['name']
-                ).first()
-            else:
-                raise serializers.ValidationError(
-                    'Укажите "id" или "name" ингредиента.'
-                )
-            if not ingredient:
-                raise serializers.ValidationError(
-                    f'Ингредиент не найден: {item}'
-                )
-            validated_ingredients.append({
-                'id': ingredient.id,
-                'amount': item.get(
-                    'amount', existing_ingredients.get(
-                        ingredient.id, {}).get('amount', 1))
-            })
-        ingredient_ids = [item['id'] for item in validated_ingredients]
+
+        for item in value:
+        if 'id' not in item or 'amount' not in item:
+            raise serializers.ValidationError(
+                'Каждый ингредиент должен содержать "id" и "amount".'
+            )
+        ingredient = Ingredient.objects.filter(id=item['id']).first()
+        if not ingredient:
+            raise serializers.ValidationError(
+                f'Ингредиент с id={item["id"]} не найден.'
+            )
+        validated_ingredients.append({
+            'id': ingredient.id,
+            'amount': item['amount']
+        })
+        ingredient_ids = [item['id'] for i in validated_ingredients]
         if len(ingredient_ids) != len(set(ingredient_ids)):
             raise serializers.ValidationError(
                 'Ингредиенты не должны повторяться.'

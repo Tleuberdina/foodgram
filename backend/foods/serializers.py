@@ -331,7 +331,15 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     recipes = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('id', 'email', 'avatar', 'username', 'recipes')
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'avatar',
+            'recipes')
         model = User
 
     def get_recipes(self, obj):

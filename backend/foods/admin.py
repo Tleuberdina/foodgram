@@ -36,6 +36,7 @@ class IngredientAdmin(admin.ModelAdmin):
         'measurement_unit'
     )
     search_fields = ('^name',)
+    ordering = ('name',)
 
 
 admin.site.register(Ingredient, IngredientAdmin)

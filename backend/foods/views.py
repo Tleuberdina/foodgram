@@ -152,7 +152,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipes = Recipe.objects.all().only('id')
         for recipe in recipes:
             if recipe.short_code == short_code:
-                return redirect(reverse('recipe-detail', kwargs={'id': recipe.id}))
+                return redirect(reverse(
+                    'recipe-detail', kwargs={'id': recipe.id})
+                )
         return Response(
             {"detail": "Рецепт не найден"},
             status=status.HTTP_404_NOT_FOUND

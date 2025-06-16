@@ -209,34 +209,24 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get(
-            'cooking_time',
-            instance.cooking_time
-        )
-        if 'image' in validated_data:
-            instance.image = validated_data['image']
-        if 'tags' in validated_data:
-            instance.tags.clear()
-            instance.tags.set(validated_data['tags'])
-        if 'ingredients' in validated_data:
-            current_ids = {
-                rel.ingredient_id
-                for rel in instance.ingredients_relations.all()
-            }
-            new_ids = {ing['id'] for ing in validated_data['ingredients']}
-            to_delete = current_ids - new_ids
-        if to_delete:
-            instance.ingredients_relations.filter(
-                ingredient_id__in=to_delete).delete()
-        for ing_data in validated_data['ingredients']:
-            IngredientRecipe.objects.update_or_create(
-                recipe=instance,
-                ingredient_id=ing_data['id'],
-                defaults={'amount': ing_data['amount']}
-            )
+        ingredients_data = validated_data.pop('ingredients', None)
+        tags = validated_data.pop('tags', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.save()
+        if tags is not None:
+            instance.tags.set(tags)
+        if ingredients_data is not None:
+            instance.ingredients_relations.all().delete()
+            ingredient_recipe_objects = [
+                IngredientRecipe(
+                    recipe=instance,
+                    ingredient_id=ingredient_data['id'],
+                    amount=ingredient_data['amount']
+                )
+                for ingredient_data in ingredients_data
+            ]
+            IngredientRecipe.objects.bulk_create(ingredient_recipe_objects)
         return instance
 
     def to_representation(self, instance):

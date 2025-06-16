@@ -122,6 +122,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
             {'detail': 'Рецепт успешно удален.'},
             status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=True,
+            methods=['get'],
+            url_path='get-link',
+            url_name='get-link',
+            permission_classes=[IsAuthenticatedOrReadOnly])
+    def get_short_link(self, request, id):
+        try:
+            recipe = Recipe.objects.get(id=id)
+        except Recipe.DoesNotExist:
+            return Response(
+                {'detail': 'Страница не найдена.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        recipe = self.get_object()
+        return Response({
+            "short-link":
+            f"https://{request.get_host()}/s/{recipe.short_code}"
+        })
+
     @action(
         detail=False,
         methods=['get'],

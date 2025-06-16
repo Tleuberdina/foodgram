@@ -110,7 +110,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         slug_field='id',
         queryset=Tag.objects.all()
     )
-    ingredients = IngredientInputSerializer(many=True, write_only=True)
+    ingredients = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -134,6 +134,13 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         serializer = MyUserSerializer(obj.author, context={'request': request})
         return serializer.data
+
+     def get_ingredients(self, obj):
+        ingredient_recipes = obj.ingredients_relations.all()
+        return IngredientRecipeOutputSerializer(
+            ingredient_recipes, many=True
+        ).data
+
 
     def validate_ingredients(self, value):
         if not value:

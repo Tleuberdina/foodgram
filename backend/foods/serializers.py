@@ -187,16 +187,26 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if tags is not None:
             instance.tags.set(tags)
         if ingredients_data is not None:
-            instance.ingredients_relations.all().delete()
-            ingredient_recipe_objects = [
-                IngredientRecipe(
-                    recipe=instance,
-                    ingredient_id=ingredient_data['id'],
-                    amount=ingredient_data['amount']
-                )
-                for ingredient_data in ingredients_data
-            ]
-            IngredientRecipe.objects.bulk_create(ingredient_recipe_objects)
+            current_relations = {rel.ingredient_id: rel
+                for rel in instance.ingredients_relations.all()
+            }
+            new_ids = set(item['id'] for item in ingredients_data)
+            for ingredient_id in list(current_relations.keys()):
+                if ingredient_id not in new_ids:
+                    current_relations[ingredient_id].delete()
+            for item in ingredients_data:
+                ingredient_id = item['id']
+                amount = item['amount']
+                if ingredient_id in current_relations:
+                    rel = current_relations[ingredient_id]
+                    rel.amount = amount
+                    rel.save()
+                else:
+                    IngredientRecipe.objects.create(
+                        recipe=instance,
+                        ingredient_id=ingredient_id,
+                        amount=amount
+                    )
         return instance
 
     def to_representation(self, instance):

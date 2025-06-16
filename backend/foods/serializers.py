@@ -34,6 +34,7 @@ class IngredientInputSerializer(serializers.Serializer):
 
 class IngredientRecipeOutputSerializer(serializers.ModelSerializer):
     """Сериализатор для вывода данных (связан с IngredientRecipe)"""
+    id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit'
@@ -41,7 +42,7 @@ class IngredientRecipeOutputSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IngredientRecipe
-        fields = ('name', 'measurement_unit', 'amount')
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -110,7 +111,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         slug_field='id',
         queryset=Tag.objects.all()
     )
-    ingredients = serializers.SerializerMethodField()
+    ingredients = IngredientInputSerializer(many=True, write_only=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -134,13 +135,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         serializer = MyUserSerializer(obj.author, context={'request': request})
         return serializer.data
-
-     def get_ingredients(self, obj):
-        ingredient_recipes = obj.ingredients_relations.all()
-        return IngredientRecipeOutputSerializer(
-            ingredient_recipes, many=True
-        ).data
-
 
     def validate_ingredients(self, value):
         if not value:

@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -148,10 +149,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='s/(?P<short_code>[a-f0-9]{3})'
     )
     def short_link_redirect(self, request, short_code=None):
-        recipes = Recipe.objects.all()
+        recipes = Recipe.objects.all().only('id')
         for recipe in recipes:
-            if recipe.short_code[:3] == short_code:
-                return redirect(f"/recipes/{recipe.id}/")
+            if recipe.short_code == short_code:
+                return redirect(reverse('recipe-detail', kwargs={'id': recipe.id}))
         return Response(
             {"detail": "Рецепт не найден"},
             status=status.HTTP_404_NOT_FOUND

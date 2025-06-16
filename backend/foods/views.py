@@ -146,23 +146,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=['get'],
-        url_path='s/(?P<short_code>[a-f0-9]{3})'
-    )
-    def short_link_redirect(self, request, short_code=None):
-        recipes = Recipe.objects.all().only('id')
-        for recipe in recipes:
-            if recipe.short_code[:3] == short_code:
-                return redirect(reverse(
-                    'recipe-detail', kwargs={'id': recipe.id})
-                )
-        return Response(
-            {"detail": "Рецепт не найден"},
-            status=status.HTTP_404_NOT_FOUND
-        )
-
-    @action(
-        detail=False,
-        methods=['get'],
         url_path='download_shopping_cart',
         url_name='download_shopping_cart',
         permission_classes=[IsAuthenticated]

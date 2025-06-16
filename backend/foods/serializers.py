@@ -217,13 +217,17 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             instance.tags.clear()
             instance.tags.set(validated_data['tags'])
         if 'ingredients' in validated_data:
-            instance.ingredientrecipe_set.all().delete()
-            for ingredient_data in validated_data['ingredients']:
-                IngredientRecipe.objects.create(
+            instance.ingredients_relations.all().delete()
+            ingredients_data = validated_data['ingredients']
+            ingredient_recipe_objects = [
+                IngredientRecipe(
                     recipe=instance,
                     ingredient_id=ingredient_data['id'],
                     amount=ingredient_data['amount']
                 )
+                for ingredient_data in ingredients_data
+            ]
+            IngredientRecipe.objects.bulk_create(ingredient_recipe_objects)
         instance.save()
         return instance
 

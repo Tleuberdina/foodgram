@@ -41,7 +41,8 @@ urlpatterns = [
     path('api/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
     path('api/', include(router.urls)),
-    path('s/<str:short_code>/', short_link_redirect, name='short-link-redirect'),
+    path('s/<str:short_code>/', short_link_redirect,
+         name='short-link-redirect'),
 ]
 
 if settings.DEBUG:

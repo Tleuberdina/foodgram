@@ -3,7 +3,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from foods.views import (FavoriteView, IngredientViewSet, RecipeViewSet,
-                         ShoppingCartView, SubscribeView, TagViewSet)
+                         ShoppingCartView, SubscribeView, TagViewSet,
+                         short_link_redirect)
 from rest_framework.routers import DefaultRouter
 from users.views import (MyUserAvatarViewSet, MyUserProfileViewSet,
                          MyUserViewSet)
@@ -40,6 +41,7 @@ urlpatterns = [
     path('api/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
     path('api/', include(router.urls)),
+    path('s/<str:short_code>/', short_link_redirect, name='short-link-redirect'),
 ]
 
 if settings.DEBUG:

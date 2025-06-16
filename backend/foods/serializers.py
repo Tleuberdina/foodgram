@@ -141,21 +141,20 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 "Нужно указать хотя бы один ингредиент"
             )
         validated_ingredients = []
-
         for item in value:
-        if 'id' not in item or 'amount' not in item:
-            raise serializers.ValidationError(
-                'Каждый ингредиент должен содержать "id" и "amount".'
-            )
-        ingredient = Ingredient.objects.filter(id=item['id']).first()
-        if not ingredient:
-            raise serializers.ValidationError(
-                f'Ингредиент с id={item["id"]} не найден.'
-            )
-        validated_ingredients.append({
-            'id': ingredient.id,
-            'amount': item['amount']
-        })
+            if 'id' not in item or 'amount' not in item:
+                raise serializers.ValidationError(
+                    'Каждый ингредиент должен содержать "id" и "amount".'
+                )
+            ingredient = Ingredient.objects.filter(id=item['id']).first()
+            if not ingredient:
+                raise serializers.ValidationError(
+                    f'Ингредиент с id={item["id"]} не найден.'
+                )
+            validated_ingredients.append({
+                'id': ingredient.id,
+                'amount': item['amount']
+            })
         ingredient_ids = [item['id'] for i in validated_ingredients]
         if len(ingredient_ids) != len(set(ingredient_ids)):
             raise serializers.ValidationError(

@@ -159,11 +159,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                     )
                 try:
                     ingredient_id = list(existing_ingredients.keys())[index]
-                    ingredient_data = existing_ingredients[ingredient_id]
                     item['id'] = ingredient_id
                 except IndexError:
                     raise serializers.ValidationError(
-                        f'Несоответствие количества ингредиентов'
+                        'Несоответствие количества ингредиентов'
                     )
             if 'id' in item:
                 ingredient = Ingredient.objects.filter(
@@ -223,12 +222,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             instance.tags.set(validated_data['tags'])
         if 'ingredients' in validated_data:
             current_ids = {
-                rel.ingredient_id for rel in instance.ingredients_relations.all()
+                rel.ingredient_id
+                for rel in instance.ingredients_relations.all()
             }
             new_ids = {ing['id'] for ing in validated_data['ingredients']}
             to_delete = current_ids - new_ids
         if to_delete:
-            instance.ingredients_relations.filter(ingredient_id__in=to_delete).delete()
+            instance.ingredients_relations.filter(
+                ingredient_id__in=to_delete).delete()
         for ing_data in validated_data['ingredients']:
             IngredientRecipe.objects.update_or_create(
                 recipe=instance,

@@ -182,7 +182,7 @@ def short_link_redirect(request, short_code):
             {"detail": "Рецепт не найден"},
             status=status.HTTP_404_NOT_FOUND
         )
-    return redirect(reverse('recipe-detail', kwargs={'id': recipe.id}))
+    return redirect(reverse('recipe-detail', kwargs={'pk': recipe.id}))
 
 
 class IngredientViewSet(viewsets.ModelViewSet):

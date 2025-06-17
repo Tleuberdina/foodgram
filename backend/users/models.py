@@ -8,7 +8,7 @@ class MyUser(AbstractUser):
         verbose_name='Аватар',
         upload_to='users/',
         blank=True,
-        default='images/avatar-icon.png'
+        default='avatar-icon.png'
     )
 
     class Meta:

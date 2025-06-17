@@ -66,7 +66,7 @@ class MyUserSerializer(UserSerializer):
         if not data.get('avatar'):
             request = self.context.get('request')
             data['avatar'] = request.build_absolute_uri(
-                'images/avatar-icon.png'
+                'avatar-icon.png'
             )
         return data
 

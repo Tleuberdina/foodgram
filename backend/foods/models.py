@@ -79,6 +79,13 @@ class Recipe(models.Model):
     def short_code(self):
         return hashlib.md5(str(self.id).encode()).hexdigest()[:3]
 
+    def get_by_short_code(short_code):
+        recipes = Recipe.objects.all()
+        for recipe in recipes:
+            if recipe.short_code == short_code:
+                return recipe
+        return None
+
 
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)

@@ -138,8 +138,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
         recipe = self.get_object()
+        short_code = recipe.generate_short_code()
         return Response({
-            "short-link": recipe.get_short_link(request)
+            "short-link": request.build_absolute_uri(f"/s/{short_code}")
         })
 
     @action(
@@ -172,20 +173,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'attachment; filename="shopping_list.txt"'
         )
         return response
-
-
-def short_link_redirect(request, short_code):
-    """Обработчик коротких ссылок."""
-    recipe = Recipe.get_by_short_code(short_code)
-    if not recipe:
-        return Response(
-            {"detail": "Рецепт не найден"},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    return redirect(
-        reverse('recipe-detail', kwargs={'pk': recipe.id}),
-        permanent=True
-    )
 
 
 class IngredientViewSet(viewsets.ModelViewSet):

@@ -78,8 +78,10 @@ class Recipe(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.short_code and self.id:
-            self.short_code = hashlib.md5(str(self.id).encode()
-                ).hexdigest()[:3]
+            self.short_code = (
+                hashlib.md5(str(self.id).encode())
+                .hexdigest()[:3]
+            )
         super().save(*args, **kwargs)
 
     def get_short_link(self, request):

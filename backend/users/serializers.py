@@ -61,7 +61,7 @@ class MyUserSerializer(UserSerializer):
             'avatar'
         )
 
-    def avatar(self, obj):
+    def get_avatar(self, obj):
         if obj.avatar:
             return obj.avatar.url
         request = self.context.get('request')

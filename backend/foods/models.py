@@ -3,6 +3,8 @@ import hashlib
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 
 User = get_user_model()
@@ -73,22 +75,20 @@ class Recipe(models.Model):
         blank=True,
         null=True,
         editable=False,
-        verbose_name='Короткая ссылка'
+        verbose_name='Короткий код'
     )
 
-    def save(self, *args, **kwargs):
-        if not self.short_code and self.id:
-            self.short_code = (
-                hashlib.md5(str(self.id).encode())
-                .hexdigest()[:3]
-            )
-        super().save(*args, **kwargs)
+    def generate_short_code(self):
+        """Генерация короткого кода на основе ID."""
+        return hashlib.md5(str(self.id).encode()).hexdigest()[:3]
 
     def get_short_link(self, request):
+        """Возвращает полную короткую ссылку."""
         return f"https://{request.get_host()}/s/{self.short_code}"
 
     @classmethod
     def get_by_short_code(cls, short_code):
+        """Поиск рецепта по short_code."""
         return cls.objects.filter(short_code=short_code).first()
 
     class Meta:
@@ -97,6 +97,15 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+    @receiver(post_save, sender='foods.Recipe')
+    def set_recipe_short_code(sender, instance, created, **kwargs):
+        """
+        Автоматически генерирует short_code после создания рецепта.
+        """
+        if created and not instance.short_code:
+            instance.short_code = instance.generate_short_code()
+            instance.save(update_fields=['short_code'])
 
 
 class IngredientRecipe(models.Model):

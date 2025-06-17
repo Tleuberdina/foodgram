@@ -129,7 +129,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             url_path='get-link',
             url_name='get-link',
             permission_classes=[IsAuthenticatedOrReadOnly])
-    def get_short_link(self, request, id):
+    def get_short_link(self, request, id=None):
         try:
             recipe = Recipe.objects.get(id=id)
         except Recipe.DoesNotExist:
@@ -175,7 +175,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 def short_link_redirect(request, short_code):
-    """Обработчик коротких ссылок"""
+    """Обработчик коротких ссылок."""
     recipe = Recipe.get_by_short_code(short_code)
     if not recipe:
         return Response(

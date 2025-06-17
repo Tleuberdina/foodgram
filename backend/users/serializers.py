@@ -2,7 +2,6 @@ import base64
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from django.templatetags.static import static
 from djoser.serializers import (TokenCreateSerializer, UserCreateSerializer,
                                 UserSerializer)
 from rest_framework import serializers
@@ -66,8 +65,9 @@ class MyUserSerializer(UserSerializer):
         data = super().to_representation(instance)
         if not data.get('avatar'):
             request = self.context.get('request')
-            default_avatar_url = static('images/avatar-icon.png')
-            data['avatar'] = request.build_absolute_uri(default_avatar_url)
+            data['avatar'] = request.build_absolute_uri(
+                'images/avatar-icon.png'
+            )
         return data
 
     def get_is_subscribed(self, obj):

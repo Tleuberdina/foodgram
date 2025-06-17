@@ -73,6 +73,7 @@ class MyUserAvatarViewSet(viewsets.ViewSet):
 
     def delete(self, request):
         user = request.user
+        user.avatar.delete(save=False)
         user.save()
         return Response(
             {'detail': 'Аватар успешно удален.'},

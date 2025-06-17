@@ -139,8 +139,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         recipe = self.get_object()
         return Response({
-            "short-link":
-            f"https://{request.get_host()}/s/{recipe.short_code}"
+            "short-link": recipe.get_short_link(request)
         })
 
     @action(
@@ -176,6 +175,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 def short_link_redirect(request, short_code):
+    """Обработчик коротких ссылок"""
     recipe = Recipe.get_by_short_code(short_code)
     if not recipe:
         return Response(

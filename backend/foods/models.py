@@ -67,6 +67,26 @@ class Recipe(models.Model):
         on_delete=models.CASCADE
     )
     pub_date = models.DateTimeField('Дата публикации', default=timezone.now)
+    short_code = models.CharField(
+        max_length=3,
+        unique=True,
+        blank=True,
+        null=True,
+        editable=False,
+        verbose_name='Короткая ссылка'
+    )
+    
+    def save(self, *args, **kwargs):
+        if not self.short_code and self.id:
+            self.short_code = hashlib.md5(str(self.id).encode()).hexdigest()[:3]
+        super().save(*args, **kwargs)
+
+    def get_short_link(self, request):
+        return f"https://{request.get_host()}/s/{self.short_code}"
+
+    @classmethod
+    def get_by_short_code(cls, short_code):
+        return cls.objects.filter(short_code=short_code).first()
 
     class Meta:
         verbose_name = 'рецепт'
@@ -74,17 +94,6 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
-
-    @property
-    def short_code(self):
-        return hashlib.md5(str(self.id).encode()).hexdigest()[:3]
-
-    def get_by_short_code(short_code):
-        recipes = Recipe.objects.all()
-        for recipe in recipes:
-            if recipe.short_code == short_code:
-                return recipe
-        return None
 
 
 class IngredientRecipe(models.Model):

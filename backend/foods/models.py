@@ -75,6 +75,7 @@ class Recipe(models.Model):
         blank=True,
         null=True,
         editable=False,
+        db_index=True,
         verbose_name='Короткий код'
     )
 
@@ -84,7 +85,7 @@ class Recipe(models.Model):
 
     def get_short_link(self, request):
         """Возвращает полную короткую ссылку."""
-        return f"https://{request.get_host()}/s/{self.short_code}"
+        return f"{request.scheme}://{request.get_host()}/s/{self.short_code}"
 
     @classmethod
     def get_by_short_code(cls, short_code):
@@ -103,7 +104,7 @@ class Recipe(models.Model):
         """
         Автоматически генерирует short_code после создания рецепта.
         """
-        if created and not instance.short_code:
+        if not instance.short_code:
             instance.short_code = instance.generate_short_code()
             instance.save(update_fields=['short_code'])
 

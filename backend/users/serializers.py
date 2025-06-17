@@ -65,9 +65,8 @@ class MyUserSerializer(UserSerializer):
         data = super().to_representation(instance)
         if not data.get('avatar'):
             request = self.context.get('request')
-            data['avatar'] = request.build_absolute_uri(
-                '/static/src/image/avatar-icon.png'
-            )
+            default_avatar_url = static('images/avatar-icon.png')
+            data['avatar'] = request.build_absolute_uri(default_avatar_url)
         return data
 
     def get_is_subscribed(self, obj):

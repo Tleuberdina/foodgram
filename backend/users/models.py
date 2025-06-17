@@ -26,7 +26,5 @@ class MyUser(AbstractUser):
             return self.avatar.url
         return f"{settings.STATIC_URL}images/avatar-icon.png"
 
-    def __getattr__(self, name):
-        if name == 'avatar':
-            return self.avatar_url
-        return super().__getattribute__(name)
+    def get_avatar(self):
+        return self.avatar_url

@@ -74,7 +74,6 @@ class Recipe(models.Model):
         verbose_name='Короткий код'
     )
 
-
     class Meta:
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'

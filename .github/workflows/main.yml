@@ -103,14 +103,15 @@ jobs:
       uses: actions/setup-node@v3
       with:
         # Это параметр воркфлоу, указывающий нужную версию Node.js
-        node-version: 18
+        node-version: '18.x'
 
     - name: Install dependencies
       # Эта команда устанавливает зависимости для фронтенда
       run: |
         cd frontend/
-        npm install --package-lock-only --legacy-peer-deps --no-audit
-        npm ci --legacy-peer-deps
+        npm install --package-lock-only --legacy-peer-deps
+        npm ci --legacy-peer-deps --force
+        NODE_OPTIONS="--require ./node_modules/jest-util/build/installCommonGlobals.js" npm run test
     - name: Test frontend
       # Запускаем тесты
       run: |

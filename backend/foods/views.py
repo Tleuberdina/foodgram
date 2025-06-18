@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -172,6 +172,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'attachment; filename="shopping_list.txt"'
         )
         return response
+
+
+class ShortLinkRedirectView(APIView):
+    def get(self, request, short_code):
+        try:
+            recipe = Recipe.objects.get(short_code=short_code)
+            return redirect(f'/api/recipes/{recipe.id}')
+        except Recipe.DoesNotExist:
+            return Response(
+                {'detail': 'Страница не найдена.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class IngredientViewSet(viewsets.ModelViewSet):

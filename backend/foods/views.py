@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
@@ -175,12 +178,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class ShortLinkRedirectView(APIView):
     def get(self, request, short_code):
+        logger.info(f"Запрос short_code: {short_code}")
         try:
             recipe = Recipe.objects.get(short_code=short_code)
+            logger.info(f"Найден рецепт: {recipe.id}")
             return redirect(
                 f'https://muyfoodgram.hopto.org/recipes/{recipe.id}/'
             )
         except Recipe.DoesNotExist:
+            logger.error(f"Рецепт с short_code={short_code} не найден")
             return Response(
                 {'detail': 'Страница не найдена.'},
                 status=status.HTTP_404_NOT_FOUND

@@ -15,6 +15,9 @@ router.register(r'tags', TagViewSet)
 router.register(r'ingredients', IngredientViewSet)
 
 urlpatterns = [
+    path('s/<str:short_code>/',
+         ShortLinkRedirectView.as_view(),
+         name='short-link-redirect'),
     path('admin/', admin.site.urls),
     path('api/users/subscriptions/',
          SubscribeView.as_view(),
@@ -41,9 +44,6 @@ urlpatterns = [
     path('api/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
     path('api/', include(router.urls)),
-    path('s/<str:short_code>/',
-         ShortLinkRedirectView.as_view(),
-         name='short-link-redirect'),
 ]
 
 if settings.DEBUG:

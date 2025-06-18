@@ -177,7 +177,9 @@ class ShortLinkRedirectView(APIView):
     def get(self, request, short_code):
         try:
             recipe = Recipe.objects.get(short_code=short_code)
-            return redirect(f'/api/recipes/{recipe.id}')
+            return redirect(
+                f'https://muyfoodgram.hopto.org/recipes/{recipe.id}/'
+            )
         except Recipe.DoesNotExist:
             return Response(
                 {'detail': 'Страница не найдена.'},

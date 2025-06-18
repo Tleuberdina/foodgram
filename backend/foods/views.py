@@ -1,6 +1,5 @@
 import logging
 
-logger = logging.getLogger(__name__)
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
@@ -24,6 +23,8 @@ from .serializers import (FavoriteListSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
                           ShoppingCartListSerializer, SubscribeSerializer,
                           SubscriptionsSerializer, TagSerializer)
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 

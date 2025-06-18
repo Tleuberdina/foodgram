@@ -137,9 +137,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
         recipe = self.get_object()
-        short_code = recipe.generate_short_code()
         return Response({
-            "short-link": request.build_absolute_uri(f"/s/{short_code}")
+            "short-link": request.build_absolute_uri(f"/s/{recipe.short_code}")
         })
 
     @action(
@@ -178,7 +177,7 @@ class ShortLinkRedirectView(APIView):
     def get(self, request, short_code):
         try:
             recipe = Recipe.objects.get(short_code=short_code)
-            return redirect(f'/recipes/{recipe.id}')
+            return redirect(f'/api/recipes/{recipe.id}')
         except Recipe.DoesNotExist:
             return Response(
                 {'detail': 'Страница не найдена.'},

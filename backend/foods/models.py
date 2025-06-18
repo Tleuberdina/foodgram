@@ -81,13 +81,13 @@ class Recipe(models.Model):
     def __str__(self):
         return self.name
 
-    def generate_short_code(self):
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
         if not self.short_code:
             hashids = Hashids(salt="your-secret-salt", min_length=3)
             code = hashids.encode(self.id)
-            self.short_code = code[:3]
-            self.save()
-        return self.short_code
+            self.short_code = code[:3].ljust(3, '0')
+            super().save(update_fields=['short_code'])
 
 
 class IngredientRecipe(models.Model):

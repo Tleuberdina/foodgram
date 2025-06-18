@@ -85,7 +85,7 @@ class Recipe(models.Model):
         super().save(*args, **kwargs)
         if not self.short_code:
             hashids = Hashids(salt="your-secret-salt", min_length=3)
-            code = hashids.encode(self.id)
+            code = hashids.encode(self.pk)
             self.short_code = code[:3].ljust(3, '0')
             super().save(update_fields=['short_code'])
 

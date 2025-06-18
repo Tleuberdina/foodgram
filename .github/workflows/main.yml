@@ -109,8 +109,8 @@ jobs:
       # Эта команда устанавливает зависимости для фронтенда
       run: |
         cd frontend/
-        npm install --package-lock-only --no-audit
-        npm ci
+        npm install --package-lock-only --legacy-peer-deps --no-audit
+        npm ci --legacy-peer-deps
 
     - name: Test frontend
       # Запускаем тесты

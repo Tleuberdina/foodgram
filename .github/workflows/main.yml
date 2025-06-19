@@ -103,20 +103,20 @@ jobs:
       uses: actions/setup-node@v3
       with:
         # Это параметр воркфлоу, указывающий нужную версию Node.js
-        node-version: '18.x'
-
+        node-version: '16.x'
+        cache: 'npm'
     - name: Install dependencies
       # Эта команда устанавливает зависимости для фронтенда
       run: |
         cd frontend/
-        npm install --legacy-peer-deps --force
+        npm ci --legacy-peer-deps --force
         npm audit fix --force || true
     - name: Test frontend
       # Запускаем тесты
       run: |
         cd frontend/
         echo "global.clearImmediate = global.setImmediate = (cb) => setTimeout(cb, 0);" > temp-polyfill.js
-        NODE_OPTIONS="--require ./temp-polyfill.js" npm run test
+        NODE_OPTIONS="--require ./temp-polyfill.js" npm test -- --watchAll=false
   build_frontend_and_push_to_docker_hub:
     name: Push frontend Docker image to DockerHub
     runs-on: ubuntu-latest

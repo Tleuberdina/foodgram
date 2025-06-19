@@ -110,9 +110,9 @@ jobs:
       # Эта команда устанавливает зависимости для фронтенда
       run: |
         cd frontend/
+        rm -rf node_modules
         npm install --legacy-peer-deps --force
-        npm ci --legacy-peer-deps --force || true
-        npm audit fix --force || true
+        ls node_modules/.bin/react-scripts || echo "React-scripts not found!"
     - name: Test frontend
       # Запускаем тесты
       run: |

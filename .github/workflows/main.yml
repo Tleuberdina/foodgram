@@ -105,6 +105,7 @@ jobs:
         # Это параметр воркфлоу, указывающий нужную версию Node.js
         node-version: '16.x'
         cache: 'npm'
+        cache-dependency-path: 'frontend/package-lock.json'
     - name: Install dependencies
       # Эта команда устанавливает зависимости для фронтенда
       run: |

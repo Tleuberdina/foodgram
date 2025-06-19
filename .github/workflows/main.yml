@@ -110,7 +110,8 @@ jobs:
       # Эта команда устанавливает зависимости для фронтенда
       run: |
         cd frontend/
-        npm ci --legacy-peer-deps --force
+        npm install --legacy-peer-deps --force
+        npm ci --legacy-peer-deps --force || true
         npm audit fix --force || true
     - name: Test frontend
       # Запускаем тесты

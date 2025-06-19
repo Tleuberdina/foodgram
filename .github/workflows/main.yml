@@ -109,14 +109,12 @@ jobs:
       # Эта команда устанавливает зависимости для фронтенда
       run: |
         cd frontend/
-        npm install --package-lock-only --legacy-peer-deps
-        npm ci --legacy-peer-deps --force
-        NODE_OPTIONS="--require ./node_modules/jest-util/build/installCommonGlobals.js" npm run test
+        npm install --legacy-peer-deps --force
+        npm audit fix --force || true
     - name: Test frontend
       # Запускаем тесты
       run: |
         cd frontend/
-        npm install --legacy-peer-deps
         echo "global.clearImmediate = global.setImmediate = (cb) => setTimeout(cb, 0);" > temp-polyfill.js
         NODE_OPTIONS="--require ./temp-polyfill.js" npm run test
   build_frontend_and_push_to_docker_hub:

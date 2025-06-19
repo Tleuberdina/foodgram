@@ -108,7 +108,7 @@ jobs:
       # Эта команда устанавливает зависимости для фронтенда
       run: |
         cd frontend/
-        npm install
+        npm install --legacy-peer-deps
     - name: Test frontend
       # Запускаем тесты
       run: |

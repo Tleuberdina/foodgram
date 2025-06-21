@@ -153,7 +153,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 )
             seen_ids.add(tag.id)
         return value
-    
+
     def validate_ingredients(self, value):
         if not value:
             raise serializers.ValidationError(

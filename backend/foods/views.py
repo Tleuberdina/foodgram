@@ -3,7 +3,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -15,7 +15,7 @@ from .filters import IngredientFilter, RecipeFilter
 from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                      ShoppingCart, Subscription, Tag)
 from .pagination import SubscriptionsCustomLimitPagination
-from .permissions import AuthorOrReadOnly, ReadOnly
+from .permissions import AuthorOrReadOnly
 from .serializers import (FavoriteListSerializer,
                           FavoriteShoppingCartSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
@@ -188,7 +188,7 @@ class ShortLinkRedirectView(APIView):
 
 
 class IngredientViewSet(
-     mixins.ListModelMixin,
+    mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet
 ):

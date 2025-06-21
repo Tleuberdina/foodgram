@@ -106,12 +106,16 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 class RecipeCreateSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=True, use_url=True)
     author = serializers.SerializerMethodField()
-    tags = serializers.SlugRelatedField(
+    tags = serializers.PrimaryKeyRelatedField(
+        required=True,
         many=True,
-        slug_field='id',
         queryset=Tag.objects.all()
     )
-    ingredients = IngredientInputSerializer(many=True, write_only=True)
+    ingredients = IngredientInputSerializer(
+        required=True,
+        many=True,
+        write_only=True
+    )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -136,6 +140,20 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         serializer = MyUserSerializer(obj.author, context={'request': request})
         return serializer.data
 
+    def validate_tags(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                "Поле тега не может быть пустым."
+            )
+        seen_ids = set()
+        for tag in value:
+            if tag.id in seen_ids:
+                raise serializers.ValidationError(
+                    "Все теги должны быть уникальны."
+                )
+            seen_ids.add(tag.id)
+        return value
+    
     def validate_ingredients(self, value):
         if not value:
             raise serializers.ValidationError(
@@ -182,6 +200,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
+        if 'tags' not in validated_data:
+            raise serializers.ValidationError(
+                {"tags": "Это поле обязательно."}
+            )
+        if 'ingredients' not in validated_data:
+            raise serializers.ValidationError(
+                {"ingredients": "Это поле обязательно."}
+            )
         ingredients_data = validated_data.pop('ingredients', None)
         tags = validated_data.pop('tags', None)
         for attr, value in validated_data.items():
@@ -228,6 +254,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
+        ret['tags'] = TagSerializer(instance.tags.all(), many=True).data
         ingredients = IngredientRecipeOutputSerializer(
             instance.ingredients_relations.all(),
             many=True
@@ -265,19 +292,12 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return False
 
 
-class RecipeSubscriptionsSerializer(serializers.ModelSerializer):
+class RecipeSubscribeSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=False, allow_null=True, use_url=True)
-    author = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
-        fields = ('id', 'author', 'name', 'cooking_time', 'image')
-        read_only_fields = ('author',)
-
-    def get_author(self, obj):
-        request = self.context.get('request')
-        serializer = MyUserSerializer(obj.author, context={'request': request})
-        return serializer.data
+        fields = ('id', 'name', 'cooking_time', 'image')
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
@@ -302,12 +322,18 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        recipes_limit = request.query_params.get(
-            'recipes_limit') if request else None
-        recipes_qs = obj.recipes.all()
-        if recipes_limit and recipes_limit.isdigit():
-            recipes_qs = recipes_qs[:int(recipes_limit)]
-        return RecipeSubscriptionsSerializer(
+        if request and request.method == 'GET':
+            recipes_limit = self.context.get('recipes_limit')
+            recipes_qs = obj.recipes.all().order_by('-pub_date')
+            if recipes_limit is not None:
+                recipes_qs = recipes_qs[:recipes_limit]
+        else:
+            recipes_limit = request.query_params.get(
+                'recipes_limit') if request else None
+            recipes_qs = obj.recipes.all()
+            if recipes_limit and recipes_limit.isdigit():
+                recipes_qs = recipes_qs[:int(recipes_limit)]
+        return RecipeSubscribeSerializer(
             recipes_qs,
             many=True,
             context={'request': request}
@@ -324,35 +350,6 @@ class SubscribeSerializer(serializers.ModelSerializer):
                 author=obj
             ).exists()
         return False
-
-
-class SubscriptionsSerializer(serializers.ModelSerializer):
-    avatar = Base64ImageField(required=False, allow_null=True, use_url=True)
-    recipes = serializers.SerializerMethodField()
-
-    class Meta:
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'avatar',
-            'recipes')
-        model = User
-
-    def get_recipes(self, obj):
-        request = self.context.get('request')
-        recipes_limit = self.context.get('recipes_limit')
-        recipes_qs = obj.recipes.all().order_by('-pub_date')
-        if recipes_limit is not None:
-            recipes_qs = recipes_qs[:recipes_limit]
-        serializer = RecipeSubscriptionsSerializer(
-            recipes_qs,
-            many=True,
-            context={'request': request}
-        )
-        return serializer.data
 
 
 class FavoriteShoppingCartSerializer(serializers.ModelSerializer):

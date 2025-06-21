@@ -19,6 +19,8 @@ class Base64ImageField(serializers.ImageField):
 
 
 class MyUserCreateSerializer(UserCreateSerializer):
+    first_name = serializers.CharField(required=True, max_length=150)
+    last_name = serializers.CharField(required=True, max_length=150)
 
     class Meta(UserCreateSerializer.Meta):
         model = User
@@ -69,7 +71,7 @@ class MyUserSerializer(UserSerializer):
 
 
 class MyUserAvatarSerializer(serializers.ModelSerializer):
-    avatar = Base64ImageField(required=True, use_url=True)
+    avatar = Base64ImageField(required=True, use_url=True, allow_null=False)
 
     class Meta:
         model = User

@@ -3,7 +3,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.pagination import CustomLimitPagination
 
-from .filters import RecipeFilter
+from .filters import IngredientFilter, RecipeFilter
 from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                      ShoppingCart, Subscription, Tag)
 from .pagination import SubscriptionsCustomLimitPagination
@@ -20,7 +20,7 @@ from .serializers import (FavoriteListSerializer,
                           FavoriteShoppingCartSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
                           ShoppingCartListSerializer, SubscribeSerializer,
-                          SubscriptionsSerializer, TagSerializer)
+                          TagSerializer)
 
 User = get_user_model()
 
@@ -187,31 +187,34 @@ class ShortLinkRedirectView(APIView):
             )
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
-    """Обрабатывает операции CRUD для модели Ingredient."""
+class IngredientViewSet(
+     mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
+):
+    """
+    Обрабатывает операции получения
+    списка объектов и объекта для модели Ingredient.
+    """
     queryset = Ingredient.objects.all().order_by('name')
     serializer_class = IngredientSerializer
-    permission_classes = (permissions.IsAdminUser,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('^name',)
-
-    def get_permissions(self):
-        if self.action == 'retrieve' or self.action == 'list':
-            return (ReadOnly(),)
-        return super().get_permissions()
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
 
 
-class TagViewSet(viewsets.ModelViewSet):
-    """Обрабатывает операции CRUD для модели Tag."""
+class TagViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
+):
+    """ Обрабатывает операции получения
+    списка объектов и объекта для модели Tag.
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     lookup_field = 'id'
-
-    def get_permissions(self):
-        if self.action == 'retrieve' or self.action == 'list':
-            return (ReadOnly(),)
-        return super().get_permissions()
 
     def retrieve(self, request, id):
         try:
@@ -251,7 +254,7 @@ class SubscribeView(APIView):
         except (TypeError, ValueError):
             recipes_limit = 6
 
-        serializer = SubscriptionsSerializer(page, many=True, context={
+        serializer = SubscribeSerializer(page, many=True, context={
             'request': request,
             'recipes_limit': recipes_limit
         })

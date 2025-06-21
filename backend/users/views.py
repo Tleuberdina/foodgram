@@ -61,10 +61,15 @@ class MyUserAvatarViewSet(viewsets.ViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def put(self, request):
+        if 'avatar' not in request.data:
+            return Response(
+                {"avatar": ["Обязательное поле."]},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         serializer = MyUserAvatarSerializer(
             instance=request.user,
             data=request.data,
-            partial=True,
+            partial=False,
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)

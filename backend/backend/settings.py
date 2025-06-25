@@ -178,7 +178,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    os.getenv('CSRF_TRUSTED_ORIGINS'),
+    os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost'),
 ]
 
 SESSION_COOKIE_SECURE = True

@@ -156,7 +156,7 @@ class ShortLinkRedirectView(APIView):
     def get(self, request, short_code):
         recipe = Recipe.objects.get_object_or_404(short_code=short_code)
         return redirect(
-            f'{settings.CSRF_TRUSTED_ORIGINS}/recipes/{recipe.pk}/'
+            f'{settings.CSRF_TRUSTED_ORIGINS[0]}/recipes/{recipe.pk}/'
         )
 
 

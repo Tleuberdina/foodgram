@@ -40,8 +40,6 @@ jobs:
         pip install setuptools==65.5.0
         pip install flake8==6.1.0 flake8-isort==5.0.0  # Совместимая версия
         pip install -r requirements.txt
-    - name: Run isort check
-      run: python -m isort --check-only backend/
     - name: Test with flake8 and django tests
       env:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}

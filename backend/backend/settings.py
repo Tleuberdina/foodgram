@@ -28,8 +28,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'dummy-key-for-tests-only')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '51.250.24.231', 'muyfoodgram.hopto.org']
-
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # Application definition
 
@@ -45,7 +44,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'django_filters',
-    'foods',
+    'api',
     'users',
 ]
 
@@ -148,7 +147,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'users.MyUser'
+AUTH_USER_MODEL = 'users.ExtendedUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -162,20 +161,24 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.AllowAny'],
+        'user': ['rest_framework.permissions.AllowAny'],
+    },
     'SERIALIZERS': {
-        'current_user': 'users.serializers.MyUserSerializer',
-        'user_create': 'users.serializers.MyUserCreateSerializer',
+        'current_user': 'users.serializers.ExtendedUserSerializer',
+        'user': 'users.serializers.ExtendedUserSerializer',
         'token_create': 'users.serializers.TokenSerializer',
     }
 }
 
 AUTHENTICATION_BACKENDS = [
-    'users.auth_backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://muyfoodgram.hopto.org',
+    os.getenv('CSRF_TRUSTED_ORIGINS'),
 ]
 
 SESSION_COOKIE_SECURE = True

@@ -1,10 +1,13 @@
 import base64
 
+from api.models import Recipe
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from djoser.serializers import (TokenCreateSerializer, UserCreateSerializer,
-                                UserSerializer)
+from djoser.serializers import TokenCreateSerializer, UserSerializer
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
+
+from .models import Subscription
 
 User = get_user_model()
 
@@ -18,36 +21,13 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-class MyUserCreateSerializer(UserCreateSerializer):
-    first_name = serializers.CharField(required=True, max_length=150)
-    last_name = serializers.CharField(required=True, max_length=150)
-
-    class Meta(UserCreateSerializer.Meta):
-        model = User
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'password',
-            'last_name'
-        )
-
-    def create(self, validated_data):
-        password = validated_data.pop('password')
-        user = super().create(validated_data)
-        user.set_password(password)
-        user.save()
-        return user
-
-
 class TokenSerializer(TokenCreateSerializer):
     """Сериализатор для получения токена."""
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
 
 
-class MyUserSerializer(UserSerializer):
+class ExtendedUserSerializer(UserSerializer):
     avatar = Base64ImageField(required=False, use_url=True)
     is_subscribed = serializers.SerializerMethodField()
 
@@ -65,12 +45,14 @@ class MyUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return obj.subscribers.filter(user=request.user).exists()
-        return False
+        return bool(
+            request
+            and request.user.is_authenticated
+            and obj.subscribers.filter(user=request.user).exists()
+        )
 
 
-class MyUserAvatarSerializer(serializers.ModelSerializer):
+class ExtendedUserAvatarSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField(required=True, use_url=True, allow_null=False)
 
     class Meta:
@@ -78,9 +60,84 @@ class MyUserAvatarSerializer(serializers.ModelSerializer):
         fields = ('avatar',)
 
 
-class MyUserAvatarUsernameSerializer(serializers.ModelSerializer):
-    avatar = Base64ImageField(required=False, allow_null=True, use_url=True)
+class RecipeSubscribeSerializer(serializers.ModelSerializer):
+    image = Base64ImageField(required=False, allow_null=True, use_url=True)
 
     class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'cooking_time', 'image')
+
+
+class SubscriptionsSerializer(UserSerializer):
+    avatar = Base64ImageField(required=False, allow_null=True, use_url=True)
+    recipes = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
+            'avatar'
+        )
         model = User
-        fields = ('avatar', 'username')
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        recipes_limit = request.query_params.get('recipes_limit')
+        queryset = obj.recipes.all().order_by('-pub_date')
+        if recipes_limit and recipes_limit.isdigit():
+            queryset = queryset[:int(recipes_limit)]
+        return RecipeSubscribeSerializer(
+            queryset,
+            many=True,
+            context={'request': request}
+        ).data
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        return bool(
+            request
+            and request.user.is_authenticated
+            and obj.subscribers.filter(user=request.user).exists()
+        )
+
+
+class SubscribeSerializer(serializers.ModelSerializer):
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user = serializers.PrimaryKeyRelatedField(
+        default=serializers.CurrentUserDefault(),
+        queryset=User.objects.all()
+    )
+
+    class Meta:
+        fields = ('user', 'author')
+        model = Subscription
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscription.objects.all(),
+                fields=['user', 'author'],
+                message='Вы уже подписаны на этого пользователя!'
+            )
+        ]
+
+    def validate(self, data):
+        if data['user'] == data['author']:
+            raise serializers.ValidationError(
+                'Вы не можете подписаться на себя!')
+        return data
+
+    def to_representation(self, instance):
+        return SubscriptionsSerializer(
+            instance.author,
+            context=self.context
+        ).data

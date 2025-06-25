@@ -15,7 +15,7 @@ RUN mkdir -p /app/data
 
 COPY ./data/ingredients.json /app/data/
 
-COPY foods/management/ /app/foods/management/
+COPY api/management/ /app/api/management/
 
 #CMD ["gunicorn", "--bind", "0.0.0.0:8800", "backend.wsgi"]
 CMD ["sh", "-c", "python manage.py wait_for_db && \

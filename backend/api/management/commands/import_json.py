@@ -1,7 +1,7 @@
 import json
 
 from django.core.management.base import BaseCommand
-from foods.models import Ingredient
+from api.models import Ingredient
 
 
 class Command(BaseCommand):

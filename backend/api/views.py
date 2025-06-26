@@ -48,7 +48,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return RecipeReadSerializer
-        elif self.action in ['create', 'update', 'partial_update', 'destroy',]:
+        elif self.action in ['create', 'update', 'partial_update', 'destroy']:
             return RecipeSerializer
         return super().get_serializer_class()
 

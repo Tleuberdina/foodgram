@@ -2,7 +2,7 @@ import hashlib
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models, transaction
+from django.db import models
 from django.utils import timezone
 
 from api.constants import (LIMIT_LENGTH_INGREDIEN_MEASUREMENT_UNIT,
@@ -47,7 +47,7 @@ class Tag(models.Model):
     )
     slug = models.SlugField(
         verbose_name='Идентификатор',
-        unique=True, 
+        unique=True,
         max_length=LIMIT_LENGTH_TAG_NAME_AND_SLUG
     )
 
@@ -77,7 +77,7 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         verbose_name='Название рецепта',
-        max_length=LIMIT_LENGTH_RECIPE_NAME 
+        max_length=LIMIT_LENGTH_RECIPE_NAME
     )
     text = models.TextField(
         verbose_name='Описание рецепта',

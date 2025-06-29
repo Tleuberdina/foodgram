@@ -9,9 +9,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
-from .constants import MAX_VALUE, MIN_VALUE
 from reviews.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
-                     ShoppingCart, Tag)
+                            ShoppingCart, Tag)
 from users.models import Subscription
 
 User = get_user_model()
@@ -150,9 +149,9 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientInputSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField( 
-        required=True, 
-        queryset=Ingredient.objects.all() 
+    id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=Ingredient.objects.all()
     )
     amount = serializers.IntegerField(required=True)
 
@@ -260,8 +259,10 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if self.context['request'].method == 'PATCH':
-            required_fields = ['name', 'text', 'ingredients', 'tags', 'cooking_time']
-            missing_fields = [field for field in required_fields if field not in data]
+            required_fields = ['name', 'text', 'ingredients',
+                               'tags', 'cooking_time']
+            missing_fields = [field for field in required_fields
+                              if field not in data]
             if missing_fields:
                 raise serializers.ValidationError(
                     {field: "Обязательное поле" for field in missing_fields}
@@ -305,9 +306,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         for idx, ingredient in enumerate(ingredients_data):
             try:
                 obj = IngredientRecipe(
-                recipe=recipe,
-                ingredient=ingredient['id'],
-                amount=ingredient['amount']
+                    recipe=recipe,
+                    ingredient=ingredient['id'],
+                    amount=ingredient['amount']
                 )
                 obj.full_clean()
                 ingredients.append(obj)

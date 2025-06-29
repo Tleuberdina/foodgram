@@ -11,6 +11,7 @@ class IngredientRecipeInline(admin.StackedInline):
     validate_min = True
     fields = ('ingredient', 'amount')
 
+
 class RecipeAdmin(admin.ModelAdmin):
     inlines = (
         IngredientRecipeInline,

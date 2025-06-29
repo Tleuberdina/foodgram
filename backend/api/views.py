@@ -123,7 +123,6 @@ class ExtendedUserViewSet(DjoserUserViewSet):
         Обрабатывает post запросы модели Subscription.
         """
         user = request.user
-        author = get_object_or_404(User, pk=id)
         data = {
             'user': user.id,
             'author': id
@@ -205,7 +204,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Обрабатывает операцию по добавлению рецепта в избранное.
         """
         author = request.user
-        recipe = get_object_or_404(Recipe, pk=id)
         data = {
             'author': author.id,
             'recipe': id
@@ -308,7 +306,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         в список покупок.
         """
         author = request.user
-        recipe = get_object_or_404(Recipe, pk=id)
         data = {
             'author': author.id,
             'recipe': id

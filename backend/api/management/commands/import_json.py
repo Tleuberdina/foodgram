@@ -1,7 +1,7 @@
 import json
 
 from django.core.management.base import BaseCommand
-from api.models import Ingredient
+from reviews.models import Ingredient
 
 
 class Command(BaseCommand):

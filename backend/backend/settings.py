@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_filters',
     'api',
     'users',
+    'reviews',
 ]
 
 MIDDLEWARE = [
@@ -167,9 +168,8 @@ DJOSER = {
         'user': ['rest_framework.permissions.AllowAny'],
     },
     'SERIALIZERS': {
-        'current_user': 'users.serializers.ExtendedUserSerializer',
-        'user': 'users.serializers.ExtendedUserSerializer',
-        'token_create': 'users.serializers.TokenSerializer',
+        'current_user': 'api.serializers.ExtendedUserSerializer',
+        'user': 'api.serializers.ExtendedUserSerializer',
     }
 }
 

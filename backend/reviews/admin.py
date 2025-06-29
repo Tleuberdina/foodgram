@@ -1,10 +1,20 @@
 from django.contrib import admin
 from django.db.models import Count
 
-from .models import Ingredient, Recipe, Tag
+from .models import Ingredient, IngredientRecipe, Recipe, Tag
 
+
+class IngredientRecipeInline(admin.StackedInline):
+    model = IngredientRecipe
+    extra = 0
+    min_num = 1
+    validate_min = True
+    fields = ('ingredient', 'amount')
 
 class RecipeAdmin(admin.ModelAdmin):
+    inlines = (
+        IngredientRecipeInline,
+    )
     list_display = (
         'name',
         'get_author_username',

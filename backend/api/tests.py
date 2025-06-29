@@ -1,10 +1,9 @@
 from http import HTTPStatus
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from api import models
+from reviews import models
 
 User = get_user_model()
 
@@ -31,13 +30,13 @@ class RecipeAPITestCase(TestCase):
         """Проверка создания рецепта."""
         models.Tag.objects.create(
             id=1,
-            name="Завтрак",
-            slug="breakfast"
+            name='Завтрак',
+            slug='breakfast'
         )
         models.Ingredient.objects.create(
             id=100,
-            name="Авокадо",
-            measurement_unit="шт"
+            name='Авокадо',
+            measurement_unit='шт'
         )
         data = {
             "ingredients": [

@@ -8,7 +8,7 @@ from .models import ExtendedUser
 
 class EmailAdminAuthForm(AuthenticationForm):
     username = forms.EmailField(
-        label="Email",
+        label='Email',
         widget=forms.EmailInput(attrs={'autofocus': True})
     )
 

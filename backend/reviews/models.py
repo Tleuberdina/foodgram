@@ -5,7 +5,12 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction
 from django.utils import timezone
 
-from users.constants import LIMIT_LENGTH_NAME, MAX_VALUE, MIN_VALUE
+from api.constants import (LIMIT_LENGTH_INGREDIEN_MEASUREMENT_UNIT,
+                           LIMIT_LENGTH_INGREDIENT_NAME,
+                           LIMIT_LENGTH_RECIPE_NAME,
+                           LIMIT_LENGTH_SHORT_CODE,
+                           LIMIT_LENGTH_TAG_NAME_AND_SLUG,
+                           MAX_VALUE, MIN_VALUE)
 
 User = get_user_model()
 
@@ -13,11 +18,11 @@ User = get_user_model()
 class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Название',
-        max_length=LIMIT_LENGTH_NAME
+        max_length=LIMIT_LENGTH_INGREDIENT_NAME
     )
     measurement_unit = models.CharField(
         verbose_name='Еденица измерения',
-        max_length=LIMIT_LENGTH_NAME
+        max_length=LIMIT_LENGTH_INGREDIEN_MEASUREMENT_UNIT
     )
 
     class Meta:
@@ -38,9 +43,13 @@ class Ingredient(models.Model):
 class Tag(models.Model):
     name = models.CharField(
         verbose_name='Название',
-        max_length=LIMIT_LENGTH_NAME
+        max_length=LIMIT_LENGTH_TAG_NAME_AND_SLUG
     )
-    slug = models.SlugField(verbose_name='Идентификатор', unique=True)
+    slug = models.SlugField(
+        verbose_name='Идентификатор',
+        unique=True, 
+        max_length=LIMIT_LENGTH_TAG_NAME_AND_SLUG
+    )
 
     class Meta:
         verbose_name = 'тег'
@@ -68,7 +77,7 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         verbose_name='Название рецепта',
-        max_length=LIMIT_LENGTH_NAME
+        max_length=LIMIT_LENGTH_RECIPE_NAME 
     )
     text = models.TextField(
         verbose_name='Описание рецепта',
@@ -79,8 +88,8 @@ class Recipe(models.Model):
         validators=[MinValueValidator(MIN_VALUE),
                     MaxValueValidator(MAX_VALUE)],
         error_messages={
-            'min_value': 'Значение меньше 1.',
-            'max_value': 'Значение больше 32000.'
+            'min_value': f'Значение меньше {MIN_VALUE}.',
+            'max_value': f'Значение больше {MAX_VALUE}.'
         }
     )
     author = models.ForeignKey(
@@ -94,7 +103,7 @@ class Recipe(models.Model):
         default=timezone.now
     )
     short_code = models.CharField(
-        max_length=8,
+        max_length=LIMIT_LENGTH_SHORT_CODE,
         unique=True,
         blank=True,
         null=True,
@@ -103,22 +112,24 @@ class Recipe(models.Model):
 
     def generate_short_code(self):
         base = str(self.pk).zfill(6)
-        hash_str = hashlib.md5(base.encode()).hexdigest()[:8].upper()
+        hash_str = hashlib.md5(
+            base.encode()).hexdigest()[:LIMIT_LENGTH_SHORT_CODE].upper()
         return hash_str
 
     def save(self, *args, **kwargs):
-        if self.pk is None:
-            super().save(*args, **kwargs)
         if not self.short_code:
-            with transaction.atomic():
-                for attempt in range(10):
-                    new_code = self.generate_short_code()
-                    if not Recipe.objects.filter(short_code=new_code).exists():
-                        self.short_code = new_code
-                        super().save(update_fields=['short_code'])
-                        break
-                else:
-                    raise ValueError("Не удалось сгенерировать уникальный код")
+            super().save(*args, **kwargs)
+            for attempt in range(10):
+                new_code = self.generate_short_code()
+                if not Recipe.objects.filter(short_code=new_code).exists():
+                    self.short_code = new_code
+                    break
+            else:
+                self.short_code = f"R{self.pk:06d}"[:LIMIT_LENGTH_SHORT_CODE]
+            kwargs['force_insert'] = False
+            super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'рецепт'
@@ -130,10 +141,16 @@ class Recipe(models.Model):
 
 
 class IngredientRecipe(models.Model):
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        verbose_name='Ингредиент',
+        related_name='ingredients_relations'
+    )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        verbose_name='Рецепт',
         related_name='ingredients_relations'
     )
     amount = models.PositiveSmallIntegerField(
@@ -146,6 +163,10 @@ class IngredientRecipe(models.Model):
             'max_value': 'Значение больше 32000.'
         }
     )
+
+    class Meta:
+        verbose_name = 'ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
 
     def __str__(self):
         return f'{self.ingredient} {self.recipe}'

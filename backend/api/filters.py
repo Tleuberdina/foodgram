@@ -1,6 +1,6 @@
 import django_filters
 
-from .models import Ingredient, Recipe
+from reviews.models import Ingredient, Recipe
 
 
 class RecipeFilter(django_filters.FilterSet):
@@ -28,12 +28,6 @@ class RecipeFilter(django_filters.FilterSet):
         author = self.request.user
         if not author.is_authenticated:
             return queryset.none() if value else queryset
-        try:
-            value = int(value)
-            if value not in [0, 1]:
-                raise ValueError
-        except (ValueError, TypeError):
-            return queryset.none()
         if value:
             return queryset.filter(favorites__author=author)
         return queryset.exclude(favorites__author=author)
@@ -42,12 +36,6 @@ class RecipeFilter(django_filters.FilterSet):
         author = self.request.user
         if not author.is_authenticated:
             return queryset.none() if value else queryset
-        try:
-            value = int(value)
-            if value not in [0, 1]:
-                raise ValueError
-        except (ValueError, TypeError):
-            return queryset.none()
         if value:
             return queryset.filter(shopping_carts__author=author)
         return queryset.exclude(shopping_carts__author=author)

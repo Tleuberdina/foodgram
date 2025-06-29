@@ -1,10 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.validators import MaxLengthValidator
 from django.db import models
 
-from .constants import LIMIT_LENGTH_EMAIL, LIMIT_LENGTH_STRING
+from api.constants import LIMIT_LENGTH_USER_NAME
 
 
 class ExtendedUser(AbstractUser):
@@ -13,35 +12,26 @@ class ExtendedUser(AbstractUser):
     email = models.EmailField(
         verbose_name='Email',
         unique=True,
-        max_length=LIMIT_LENGTH_EMAIL,
-        validators=[MaxLengthValidator(LIMIT_LENGTH_EMAIL)],
         error_messages={
             'unique': 'Пользователь с таким email уже существует.'
         }
     )
     username = models.CharField(
         verbose_name='Никнейм',
-        max_length=LIMIT_LENGTH_STRING,
+        max_length=LIMIT_LENGTH_USER_NAME,
         unique=True,
-        validators=[
-            UnicodeUsernameValidator(),
-            MaxLengthValidator(LIMIT_LENGTH_STRING)],
+        validators=[UnicodeUsernameValidator()],
         error_messages={
             'unique': 'Этот никнейм уже занят.',
-            'max_length': 'Никнейм не должен превышать 150 символов.'
         }
     )
     first_name = models.CharField(
         verbose_name='Имя',
-        max_length=LIMIT_LENGTH_STRING,
-        validators=[MaxLengthValidator(LIMIT_LENGTH_STRING)],
-        blank=False
+        max_length=LIMIT_LENGTH_USER_NAME
     )
     last_name = models.CharField(
         verbose_name='Фамилия',
-        max_length=LIMIT_LENGTH_STRING,
-        validators=[MaxLengthValidator(LIMIT_LENGTH_STRING)],
-        blank=False
+        max_length=LIMIT_LENGTH_USER_NAME
     )
     avatar = models.ImageField(
         verbose_name='Аватар',
@@ -58,15 +48,6 @@ class ExtendedUser(AbstractUser):
 
     def __str__(self):
         return f'{self.last_name} {self.first_name} ({self.email})'
-
-    def save(self, *args, **kwargs):
-        if self.is_superuser and not all(
-            [self.email, self.first_name, self.last_name]
-        ):
-            raise ValueError(
-                'Суперпользователь должен иметь email, имя и фамилию'
-            )
-        super().save(*args, **kwargs)
 
 
 User = get_user_model()

@@ -1,12 +1,10 @@
 import base64
 
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import transaction
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
@@ -316,21 +314,19 @@ class RecipeSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         required_fields = ['name', 'text', 'cooking_time']
-        missing_fields = [field for field in required_fields 
+        missing_fields = [field for field in required_fields
                           if field not in validated_data]
-        if missing_fields: 
-            raise serializers.ValidationError( 
-                {field: "Обязательное поле" for field in missing_fields} 
+        if missing_fields:
+            raise serializers.ValidationError(
+                {field: "Обязательное поле" for field in missing_fields}
             )
         ingredients_data = validated_data.pop('ingredients', [])
         tags_data = validated_data.pop('tags', [])
         instance.ingredients_relations.all().delete()
         instance.tags.clear()
-        return (
-            self._create_ingredients(
+        return (self._create_ingredients(
             updated_instance := super().update(instance, validated_data),
-            ingredients_data
-            ),
+            ingredients_data),
             updated_instance.tags.set(tags_data)
         ) and updated_instance
 

@@ -6,11 +6,11 @@ from django.db import models
 from django.utils import timezone
 
 from .constants import (LIMIT_LENGTH_INGREDIEN_MEASUREMENT_UNIT,
-                           LIMIT_LENGTH_INGREDIENT_NAME,
-                           LIMIT_LENGTH_RECIPE_NAME,
-                           LIMIT_LENGTH_SHORT_CODE,
-                           LIMIT_LENGTH_TAG_NAME_AND_SLUG,
-                           MAX_VALUE, MIN_VALUE)
+                        LIMIT_LENGTH_INGREDIENT_NAME,
+                        LIMIT_LENGTH_RECIPE_NAME,
+                        LIMIT_LENGTH_SHORT_CODE,
+                        LIMIT_LENGTH_TAG_NAME_AND_SLUG,
+                        MAX_VALUE, MIN_VALUE)
 
 User = get_user_model()
 

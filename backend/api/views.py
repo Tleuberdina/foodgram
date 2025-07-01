@@ -133,7 +133,7 @@ class ExtendedUserViewSet(DjoserUserViewSet):
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        subscription = serializer.save()
+        serializer.save()
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
@@ -214,7 +214,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        favorite = serializer.save()
+        serializer.save()
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
@@ -241,7 +241,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             {'detail': 'Рецепт удален из избранного.'},
             status=status.HTTP_204_NO_CONTENT
         )
-
 
     @action(detail=True,
             methods=['get'],
@@ -317,7 +316,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        shopping_cart = serializer.save()
+        serializer.save()
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED

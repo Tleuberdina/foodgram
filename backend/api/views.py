@@ -123,9 +123,10 @@ class ExtendedUserViewSet(DjoserUserViewSet):
         Обрабатывает post запросы модели Subscription.
         """
         user = request.user
+        author = get_object_or_404(User, pk=id)
         data = {
             'user': user.id,
-            'author': id
+            'author': author.id
         }
         serializer = SubscribeSerializer(
             data=data,
@@ -134,7 +135,7 @@ class ExtendedUserViewSet(DjoserUserViewSet):
         serializer.is_valid(raise_exception=True)
         subscription = serializer.save()
         return Response(
-            serializer.to_representation(subscription),
+            serializer.data,
             status=status.HTTP_201_CREATED
         )
 
@@ -149,16 +150,15 @@ class ExtendedUserViewSet(DjoserUserViewSet):
             user=user,
             author=author
         ).delete()
-        if delete_cnt != 0:
-            return Response(
-                {'detail': 'Подписка удалена.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        else:
+        if not delete_cnt:
             return Response(
                 {'detail': 'Вы не подписаны на этого пользователя.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        return Response(
+            {'detail': 'Подписка удалена.'},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -204,9 +204,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Обрабатывает операцию по добавлению рецепта в избранное.
         """
         author = request.user
+        recipe = get_object_or_404(Recipe, pk=id)
         data = {
             'author': author.id,
-            'recipe': id
+            'recipe': recipe.id
         }
         serializer = FavoriteSerializer(
             data=data,
@@ -215,7 +216,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         favorite = serializer.save()
         return Response(
-            serializer.to_representation(favorite),
+            serializer.data,
             status=status.HTTP_201_CREATED
         )
 
@@ -231,16 +232,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe=recipe,
             author=author
         ).delete()
-        if delete_cnt != 0:
-            return Response(
-                {'detail': 'Рецепт удален из избранного.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        else:
+        if not delete_cnt:
             return Response(
                 {'detail': 'Рецепт отсутствует в избранном.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        return Response(
+            {'detail': 'Рецепт удален из избранного.'},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
 
     @action(detail=True,
             methods=['get'],
@@ -306,9 +307,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         в список покупок.
         """
         author = request.user
+        recipe = get_object_or_404(Recipe, pk=id)
         data = {
             'author': author.id,
-            'recipe': id
+            'recipe': recipe.id
         }
         serializer = ShoppingCartSerializer(
             data=data,
@@ -317,7 +319,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         shopping_cart = serializer.save()
         return Response(
-            serializer.to_representation(shopping_cart),
+            serializer.data,
             status=status.HTTP_201_CREATED
         )
 
@@ -333,16 +335,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe=recipe,
             author=author
         ).delete()
-        if delete_cnt != 0:
-            return Response(
-                {'detail': 'Рецепт успешно удален из списка покупок.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        else:
+        if not delete_cnt:
             return Response(
                 {'detail': 'Рецепт отсутствует в списке покупок.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        return Response(
+            {'detail': 'Рецепт успешно удален из списка покупок.'},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 class ShortLinkRedirectView(APIView):

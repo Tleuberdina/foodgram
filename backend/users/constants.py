@@ -1,3 +1,3 @@
 """Константы приложения"""
 
-PAGE_SIZE = 6
+LIMIT_LENGTH_USER_NAME = 150

@@ -5,7 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
-from api.constants import (LIMIT_LENGTH_INGREDIEN_MEASUREMENT_UNIT,
+from .constants import (LIMIT_LENGTH_INGREDIEN_MEASUREMENT_UNIT,
                            LIMIT_LENGTH_INGREDIENT_NAME,
                            LIMIT_LENGTH_RECIPE_NAME,
                            LIMIT_LENGTH_SHORT_CODE,
@@ -127,8 +127,6 @@ class Recipe(models.Model):
             else:
                 self.short_code = f"R{self.pk:06d}"[:LIMIT_LENGTH_SHORT_CODE]
             kwargs['force_insert'] = False
-            super().save(*args, **kwargs)
-        else:
             super().save(*args, **kwargs)
 
     class Meta:

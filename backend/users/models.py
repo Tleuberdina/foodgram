@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-from api.constants import LIMIT_LENGTH_USER_NAME
+from .constants import LIMIT_LENGTH_USER_NAME
 
 
 class ExtendedUser(AbstractUser):

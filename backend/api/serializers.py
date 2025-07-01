@@ -153,7 +153,6 @@ class IngredientInputSerializer(serializers.ModelSerializer):
         required=True,
         queryset=Ingredient.objects.all()
     )
-    amount = serializers.IntegerField(required=True)
 
     class Meta:
         model = IngredientRecipe
@@ -258,15 +257,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
     def validate(self, data):
-        if self.context['request'].method == 'PATCH':
-            required_fields = ['name', 'text', 'ingredients',
-                               'tags', 'cooking_time']
-            missing_fields = [field for field in required_fields
-                              if field not in data]
-            if missing_fields:
-                raise serializers.ValidationError(
-                    {field: "Обязательное поле" for field in missing_fields}
-                )
         ingredients = data.get('ingredients', [])
         if not ingredients:
             raise serializers.ValidationError({
@@ -300,23 +290,16 @@ class RecipeSerializer(serializers.ModelSerializer):
             context=self.context
         ).data
 
-    def _create_ingredients(self, recipe, ingredients_data, author=None):
+    def _create_ingredients(self, recipe, ingredients_data):
         ingredients = []
-        validation_errors = {}
-        for idx, ingredient in enumerate(ingredients_data):
-            try:
-                obj = IngredientRecipe(
-                    recipe=recipe,
-                    ingredient=ingredient['id'],
-                    amount=ingredient['amount']
-                )
-                obj.full_clean()
-                ingredients.append(obj)
-            except ValidationError as e:
-                for field, errors in e.message_dict.items():
-                    validation_errors.setdefault(field, []).extend(errors)
-        if validation_errors:
-            raise DRFValidationError(validation_errors)
+        for ingredient in ingredients_data:
+            obj = IngredientRecipe(
+                recipe=recipe,
+                ingredient=ingredient['id'],
+                amount=ingredient['amount']
+            )
+            obj.full_clean()
+            ingredients.append(obj)
         IngredientRecipe.objects.bulk_create(ingredients)
 
     @transaction.atomic
@@ -327,19 +310,29 @@ class RecipeSerializer(serializers.ModelSerializer):
         validated_data['author'] = author
         recipe = super().create(validated_data)
         recipe.tags.set(tags_data)
-        self._create_ingredients(recipe, ingredients_data, author)
+        self._create_ingredients(recipe, ingredients_data)
         return recipe
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        required_fields = ['name', 'text', 'cooking_time']
+        missing_fields = [field for field in required_fields 
+                          if field not in validated_data]
+        if missing_fields: 
+            raise serializers.ValidationError( 
+                {field: "Обязательное поле" for field in missing_fields} 
+            )
         ingredients_data = validated_data.pop('ingredients', [])
         tags_data = validated_data.pop('tags', [])
         instance.ingredients_relations.all().delete()
         instance.tags.clear()
-        updated_instance = super().update(instance, validated_data)
-        updated_instance.tags.set(tags_data)
-        self._create_ingredients(updated_instance, ingredients_data)
-        return updated_instance
+        return (
+            self._create_ingredients(
+            updated_instance := super().update(instance, validated_data),
+            ingredients_data
+            ),
+            updated_instance.tags.set(tags_data)
+        ) and updated_instance
 
 
 class FavoriteShoppingCartSerializer(serializers.ModelSerializer):
@@ -387,7 +380,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=ShoppingCart.objects.all(),
                 fields=['author', 'recipe'],
-                message='Этот рецепт уже добавлен в избранное!'
+                message='Этот рецепт уже добавлен в список покупок!'
             )
         ]
 

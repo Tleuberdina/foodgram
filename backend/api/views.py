@@ -351,7 +351,7 @@ class ShortLinkRedirectView(APIView):
     """
     def get(self, request, short_code):
         recipe = get_object_or_404(Recipe, short_code=short_code)
-        return redirect(f'/api/recipes/{recipe.pk}/')
+        return redirect(f'/recipes/{recipe.pk}/')
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):

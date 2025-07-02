@@ -329,7 +329,7 @@ class FavoriteShoppingCartSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         fields = ('author', 'recipe')
         model = Favorite
@@ -349,7 +349,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         fields = ('author', 'recipe')
         model = ShoppingCart

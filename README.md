@@ -118,4 +118,4 @@ Copy
 "first_name": "Вася",
 "last_name": "Иванов"
 }
-### Автор проекта: Юлия Тлеубердина (https://github.com/Tleuberdina)
+### Автор проекта: Юлия Тлеубердина https://github.com/Tleuberdina
